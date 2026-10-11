@@ -18,7 +18,7 @@
       <a href="guide.html" class="active">アーキテクチャガイド</a>
     </nav>
     <span class="spacer"></span>
-    <button id="themeBtn" class="icon-btn" type="button" aria-label="テーマ切替">◐</button>
+    <button id="themeBtn" class="icon-btn" type="button">明るさを切り替える</button>
   </header>
 
   <main class="wrap">
@@ -48,22 +48,25 @@
     </div>
 
     <!-- 1. 全体像 -->
-    <section id="map" class="card">
+    <section id="map">
       <h2>1. 全体像：生成 AI アプリの 7 つの層</h2>
       <p>AIP-C01 の問題は「どの層の課題か」を見極めると選択肢を絞り込めます。たとえば「回答に根拠がない」は安全対策（グラウンディング）か検索の層、「429 エラー」は推論の層、「誰が呼び出したか」は監視の層の課題です。</p>
-      <div class="layers">
-        <div class="layer"><div class="lname">① 利用者・API</div><div class="lsvcs"><span>API Gateway</span><span>AppSync</span><span>CloudFront</span><span>Cognito</span><span>WAF</span><span>Amazon Q Business</span><span>Amazon Lex</span></div></div>
-        <div class="layer"><div class="lname">② オーケストレーション</div><div class="lsvcs"><span>Lambda</span><span>Step Functions</span><span>Bedrock Agents</span><span>AgentCore</span><span>Bedrock Flows</span><span>ECS / EKS</span></div></div>
-        <div class="layer"><div class="lname">③ 推論（基盤モデル）</div><div class="lsvcs"><span>Bedrock（Converse / Invoke）</span><span>バッチ推論</span><span>クロスリージョン推論</span><span>Provisioned Throughput</span><span>SageMaker AI エンドポイント</span></div></div>
-        <div class="layer"><div class="lname">④ 知識・検索（RAG）</div><div class="lsvcs"><span>Bedrock Knowledge Bases</span><span>OpenSearch Service / Serverless</span><span>Aurora PostgreSQL（pgvector）</span><span>Neptune</span><span>Kendra</span></div></div>
-        <div class="layer"><div class="lname">⑤ データ取り込み・前処理</div><div class="lsvcs"><span>S3</span><span>Glue</span><span>Textract</span><span>Transcribe</span><span>Comprehend</span><span>Kinesis</span><span>AppFlow</span><span>EventBridge</span></div></div>
-        <div class="layer"><div class="lname">⑥ 安全性・セキュリティ</div><div class="lsvcs"><span>Bedrock Guardrails</span><span>IAM</span><span>KMS</span><span>PrivateLink</span><span>Secrets Manager</span><span>Macie</span><span>A2I</span></div></div>
-        <div class="layer"><div class="lname">⑦ 監視・評価・コスト</div><div class="lsvcs"><span>CloudWatch</span><span>CloudTrail</span><span>X-Ray</span><span>呼び出しログ</span><span>Bedrock Evaluations</span><span>Cost Explorer</span><span>Cost Anomaly Detection</span></div></div>
-      </div>
+      <div class="table-scroll"><table>
+        <thead><tr><th>層</th><th>主なサービス</th></tr></thead>
+        <tbody>
+          <tr><td>利用者・API</td><td>API Gateway、AppSync、CloudFront、Cognito、WAF、Amazon Q Business、Amazon Lex</td></tr>
+          <tr><td>オーケストレーション</td><td>Lambda、Step Functions、Bedrock Agents、AgentCore、Bedrock Flows、ECS / EKS</td></tr>
+          <tr><td>推論（基盤モデル）</td><td>Bedrock（Converse / Invoke）、バッチ推論、クロスリージョン推論、Provisioned Throughput、SageMaker AI エンドポイント</td></tr>
+          <tr><td>知識・検索（RAG）</td><td>Bedrock Knowledge Bases、OpenSearch Service / Serverless、Aurora PostgreSQL（pgvector）、Neptune、Kendra</td></tr>
+          <tr><td>データ取り込み・前処理</td><td>S3、Glue、Textract、Transcribe、Comprehend、Kinesis、AppFlow、EventBridge</td></tr>
+          <tr><td>安全性・セキュリティ</td><td>Bedrock Guardrails、IAM、KMS、PrivateLink、Secrets Manager、Macie、A2I</td></tr>
+          <tr><td>監視・評価・コスト</td><td>CloudWatch、CloudTrail、X-Ray、呼び出しログ、Bedrock Evaluations、Cost Explorer、Cost Anomaly Detection</td></tr>
+        </tbody>
+      </table></div>
     </section>
 
     <!-- 2. パターン -->
-    <section id="patterns" class="card">
+    <section id="patterns">
       <h2>2. 頻出のアーキテクチャパターン</h2>
 
       <h3>P1. マネージド RAG（Knowledge Bases）</h3>
@@ -134,7 +137,7 @@
     </section>
 
     <!-- 3. 判断表 -->
-    <section id="decide" class="card">
+    <section id="decide">
       <h2>3. 判断表（どれを選ぶか）</h2>
 
       <h3>推論の方式</h3>
@@ -192,7 +195,7 @@
     <section id="ml" class="cat">
       <h3>4. 機械学習</h3>
 
-      <div class="svc"><h4>Amazon Bedrock（推論 API）</h4><dl>
+      <div class="svc" id="svc-bedrock"><h4>Amazon Bedrock（推論 API）</h4><dl>
         <dt>役割</dt><dd>複数のプロバイダーの基盤モデルを、サーバーレスに単一の API で使えるサービス。</dd>
         <dt>使いどころ</dt><dd><code>Converse</code> / <code>ConverseStream</code> はモデル間で共通の形式（ツール使用、マルチターン、ストリーミング）。<code>InvokeModel</code> はモデル固有の形式。</dd>
         <dt>着眼点</dt><dd>推論方式の選択（オンデマンド / バッチ / クロスリージョン / Provisioned Throughput）、プロンプトキャッシュ、429 の対策（ジッター付き指数バックオフ）、モデル呼び出しログ、コンテキストウィンドウ超過の対処。</dd>
@@ -200,7 +203,7 @@
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/conversation-inference.html" target="_blank" rel="noopener">Converse API</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/batch-inference.html" target="_blank" rel="noopener">バッチ推論</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/cross-region-inference.html" target="_blank" rel="noopener">クロスリージョン推論</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/prompt-caching.html" target="_blank" rel="noopener">プロンプトキャッシュ</a></dd>
       </dl></div>
 
-      <div class="svc"><h4>Amazon Bedrock Knowledge Bases</h4><dl>
+      <div class="svc" id="svc-kb"><h4>Amazon Bedrock Knowledge Bases</h4><dl>
         <dt>役割</dt><dd>RAG のための取り込み（解析・チャンキング・埋め込み・格納）と検索をまとめて行うマネージド機能。</dd>
         <dt>使いどころ</dt><dd><code>Retrieve</code>（検索結果だけ）と <code>RetrieveAndGenerate</code>（回答生成まで）。S3、Web クローラー、Confluence、SharePoint、Salesforce などのデータソースに対応。構造化データ（Redshift など）への自然言語クエリも可能。</dd>
         <dt>着眼点</dt><dd>チャンキング（固定 / 階層 / セマンティック / なし）、解析（既定 / 基盤モデル / Bedrock Data Automation）、メタデータフィルタ（<code>.metadata.json</code>）、増分同期、リランクモデル、ハイブリッド検索。</dd>
@@ -208,7 +211,7 @@
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/kb-chunking.html" target="_blank" rel="noopener">チャンキング</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/kb-metadata.html" target="_blank" rel="noopener">メタデータ</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/kb-data-source-sync-ingest.html" target="_blank" rel="noopener">同期</a></dd>
       </dl></div>
 
-      <div class="svc"><h4>Amazon Bedrock Agents</h4><dl>
+      <div class="svc" id="svc-agents"><h4>Amazon Bedrock Agents</h4><dl>
         <dt>役割</dt><dd>基盤モデルが計画を立て、アクション グループ（Lambda、OpenAPI スキーマ）やナレッジベースを使ってタスクを実行するマネージドなエージェント。</dd>
         <dt>使いどころ</dt><dd>問い合わせ対応、予約や照会などの業務 API の呼び出し。マルチエージェントの連携（スーパーバイザー）。</dd>
         <dt>着眼点</dt><dd>ユーザー確認（<code>requireConfirmation</code>）、Return of Control（アプリ側でアクションを実行）、トレースによるデバッグ、セッション属性、エイリアスとバージョン。</dd>
@@ -216,7 +219,7 @@
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/agents-how.html" target="_blank" rel="noopener">仕組み</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/agents-userconfirmation.html" target="_blank" rel="noopener">ユーザー確認</a></dd>
       </dl></div>
 
-      <div class="svc"><h4>Amazon Bedrock AgentCore</h4><dl>
+      <div class="svc" id="svc-agentcore"><h4>Amazon Bedrock AgentCore</h4><dl>
         <dt>役割</dt><dd>任意のフレームワークとモデルで作ったエージェントを、安全かつ大規模に本番運用するためのサービス群。</dd>
         <dt>使いどころ</dt><dd><b>Runtime</b>：セッション分離されたサーバーレスのホスティング（既定で最大 8 時間）。<b>Gateway</b>：API・Lambda・既存サービスを MCP 対応ツールに変換。<b>Identity</b>：エージェント用の ID と外部サービスの資格情報（OAuth など）の管理。<b>Memory</b>：短期・長期の記憶。<b>Code Interpreter / Browser</b>：コード実行とブラウザ操作。<b>Observability</b>：トレースとメトリクス。</dd>
         <dt>着眼点</dt><dd>既存のエージェントのコードを活かしたまま運用基盤を用意する場面。Lambda の 15 分制限を超える長時間処理。利用者の代わりに外部 SaaS にアクセスする委任。</dd>
@@ -224,7 +227,7 @@
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html" target="_blank" rel="noopener">AgentCore とは</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock-agentcore/latest/devguide/bedrock-agentcore-limits.html" target="_blank" rel="noopener">クォータ</a></dd>
       </dl></div>
 
-      <div class="svc"><h4>Amazon Bedrock Guardrails</h4><dl>
+      <div class="svc" id="svc-guardrails"><h4>Amazon Bedrock Guardrails</h4><dl>
         <dt>役割</dt><dd>入力と出力に安全対策を適用する機能。</dd>
         <dt>使いどころ</dt><dd>コンテンツフィルタ（有害カテゴリ、プロンプト攻撃）、拒否トピック、単語フィルタ、機密情報フィルタ（PII のブロック / マスク、正規表現）、コンテキストグラウンディングチェック（ハルシネーション検出）、自動推論チェック。</dd>
         <dt>着眼点</dt><dd><code>ApplyGuardrail</code> API でモデルを呼ばずに評価でき、SageMaker や外部のモデルにも使える。Agents や Knowledge Bases にも関連付けられる。</dd>
@@ -238,7 +241,7 @@
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/prompt-management.html" target="_blank" rel="noopener">Prompt Management</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/flows.html" target="_blank" rel="noopener">Flows</a></dd>
       </dl></div>
 
-      <div class="svc"><h4>Amazon Bedrock Evaluations / モデルのカスタマイズ</h4><dl>
+      <div class="svc" id="svc-eval"><h4>Amazon Bedrock Evaluations / モデルのカスタマイズ</h4><dl>
         <dt>役割</dt><dd>モデルや RAG の評価（自動評価、LLM-as-a-judge、人による評価）と、ファインチューニング、継続事前学習、蒸留によるカスタマイズ。</dd>
         <dt>着眼点</dt><dd>RAG 評価は「検索のみ」（ContextRelevance、ContextCoverage）と「検索と生成」（Correctness、Faithfulness など）に分かれる。評価を CI/CD の品質ゲートに組み込む。</dd>
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html" target="_blank" rel="noopener">RAG 評価のメトリクス</a> / <a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/custom-models.html" target="_blank" rel="noopener">モデルのカスタマイズ</a></dd>
@@ -316,7 +319,7 @@
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html" target="_blank" rel="noopener">SQS</a> / <a href="https://docs.aws.amazon.com/ja_jp/appconfig/latest/userguide/what-is-appconfig.html" target="_blank" rel="noopener">AppConfig</a></dd>
       </dl></div>
 
-      <div class="svc"><h4>Amazon API Gateway / AWS AppSync / Amazon CloudFront</h4><dl>
+      <div class="svc" id="svc-apigw"><h4>Amazon API Gateway / AWS AppSync / Amazon CloudFront</h4><dl>
         <dt>役割と使いどころ</dt><dd>API Gateway：REST / HTTP / WebSocket API。使用量プランとスロットリングで利用者ごとに制限。AppSync：GraphQL とリアルタイムのサブスクリプション。CloudFront：フロントエンドの配信と WAF の適用。</dd>
         <dt>着眼点</dt><dd>ストリーミング表示には WebSocket など双方向の通信路が必要。</dd>
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/apigateway/latest/developerguide/apigateway-websocket-api.html" target="_blank" rel="noopener">WebSocket API</a></dd>
@@ -338,7 +341,7 @@
         <dt>使いどころ</dt><dd>Cognito：利用者の認証とトークン（テナント ID などの属性を検索フィルタに使う）。WAF：API への攻撃やレート制限。Macie：S3 に置いた学習データや RAG のソースに含まれる機密データの検出。</dd>
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/macie/latest/user/what-is-macie.html" target="_blank" rel="noopener">Macie</a></dd>
       </dl></div>
-      <div class="svc"><h4>AWS PrivateLink（インターフェイス VPC エンドポイント）</h4><dl>
+      <div class="svc" id="svc-privatelink"><h4>AWS PrivateLink（インターフェイス VPC エンドポイント）</h4><dl>
         <dt>使いどころ</dt><dd>VPC から Bedrock（bedrock-runtime、bedrock-agent-runtime など）へインターネットを経由せずに接続。エンドポイントポリシーで許可する操作やモデルを制限。</dd>
         <dt>資料</dt><dd><a href="https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/vpc-interface-endpoints.html" target="_blank" rel="noopener">Bedrock のインターフェイス VPC エンドポイント</a></dd>
       </dl></div>
@@ -362,7 +365,7 @@
       </dl></div>
     </section>
 
-    <section id="refs" class="card">
+    <section id="refs">
       <h2>10. 参考資料</h2>
       <ul>
         <li><a href="https://docs.aws.amazon.com/ja_jp/aws-certification/latest/ai-professional-01/ai-professional-01.html" target="_blank" rel="noopener">AIP-C01 試験ガイド</a>（各分野のタスクとスキル）</li>

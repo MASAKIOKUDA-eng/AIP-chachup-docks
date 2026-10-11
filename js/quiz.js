@@ -18,7 +18,10 @@
   }
   function loadHistory() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
   function saveHistory(h) { try { localStorage.setItem(STORE, JSON.stringify(h)); } catch (e) {} }
-  function domainTag(d) { return '<span class="tag dtag d' + d + '">D' + d + " " + esc(window.DOMAINS[d].name) + "</span>"; }
+  function domainLabel(d) { return "第" + d + "分野　" + esc(window.DOMAINS[d].name); }
+  function guideLink(q) {
+    return q.guide ? '<a href="guide.html#' + encodeURIComponent(q.guide) + '">' + esc(q.topic) + " の解説（アーキテクチャガイド）</a>" : esc(q.topic);
+  }
   // 根拠リンクは https のみ許可（データに javascript: などが混入しても実行されないように）
   function safeUrl(u) { return /^https:\/\//.test(u) ? u : "#"; }
   function isMulti(q) { return q.answer.length > 1; }
@@ -31,7 +34,7 @@
     var html = "";
     Object.keys(window.DOMAINS).forEach(function (d) {
       var n = window.QUESTIONS.filter(function (q) { return String(q.domain) === d; }).length;
-      html += '<label><input type="checkbox" name="dom" value="' + d + '" checked>D' + d + "（" + n + "問）</label>";
+      html += '<label><input type="checkbox" name="dom" value="' + d + '" checked> ' + domainLabel(d) + "（" + n + "問）</label>";
     });
     box.innerHTML = html;
     $("total").textContent = window.QUESTIONS.length;
@@ -39,10 +42,9 @@
     var rows = window.QUESTIONS.map(function (q) {
       var r = h[q.id];
       var mark = !r ? '<span class="muted">未回答</span>' : r.last ? '<span style="color:var(--ok)">○ 正解</span>' : '<span style="color:var(--ng)">× 不正解</span>';
-      return "<tr><td>" + esc(q.id) + "</td><td>" + domainTag(q.domain) + '</td><td class="small">' +
-        q.services.map(esc).join(" / ") + "</td><td>" + mark + "</td></tr>";
+      return "<tr><td>" + esc(q.id) + '</td><td class="small">' + domainLabel(q.domain) + "</td><td>" + esc(q.topic) + "</td><td>" + mark + "</td></tr>";
     }).join("");
-    $("historyTable").innerHTML = "<table><thead><tr><th>問題</th><th>分野</th><th>組み合わせるサービス</th><th>前回</th></tr></thead><tbody>" + rows + "</tbody></table>";
+    $("historyTable").innerHTML = "<table><thead><tr><th>問題</th><th>試験分野</th><th>知識分野</th><th>前回</th></tr></thead><tbody>" + rows + "</tbody></table>";
   }
 
   function start(onlyWrong) {
@@ -77,9 +79,13 @@
     var multi = isMulti(q);
 
     $("qProgress").textContent = (state.idx + 1) + " / " + state.list.length + "（" + q.id + "）";
-    $("qDomain").innerHTML = domainTag(q.domain) + '<span class="tag">' + esc(q.task) + "</span>";
     $("bar").style.width = ((state.idx + 1) / state.list.length * 100) + "%";
-    $("qServices").innerHTML = q.services.map(function (s) { return '<span class="tag">' + esc(s) + "</span>"; }).join("");
+    // 解答前から、どの分野・知識を問う問題かを示す
+    $("qMeta").innerHTML =
+      "<tr><th>試験分野</th><td>" + domainLabel(q.domain) + "（配点 " + window.DOMAINS[q.domain].weight + "%）</td></tr>" +
+      "<tr><th>タスク</th><td>" + esc(q.task) + "</td></tr>" +
+      "<tr><th>知識分野</th><td>" + esc(q.topic) + "</td></tr>" +
+      "<tr><th>関連サービス</th><td>" + q.services.map(esc).join("、") + "</td></tr>";
     $("qText").textContent = q.question;
     $("qHint").textContent = multi ? "正しいものを " + q.answer.length + " つ選んでください。" : "最も適切なものを 1 つ選んでください。";
 
@@ -114,13 +120,14 @@
       var ok = sameSet(sel, q.answer);
       var correctLetters = order.map(function (o, p) { return q.answer.indexOf(o) >= 0 ? LETTERS[p] : null; }).filter(Boolean).join("・");
       fb.innerHTML =
-        '<div class="result-banner ' + (ok ? "ok" : "ng") + '">' + (ok ? "正解です" : "不正解です（正解：" + correctLetters + "）") + "</div>" +
+        '<p class="result-line ' + (ok ? "ok" : "ng") + '">' + (ok ? "正解" : "不正解（正解は " + correctLetters + "）") + "</p>" +
         "<h3>解説</h3><p>" + esc(q.explanation) + "</p>" +
         "<h3>正解のアーキテクチャ（処理の流れ）</h3><ol class=\"flow\">" + q.flow.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ol>" +
         "<h3>根拠となる AWS ドキュメント</h3>" + q.evidence.map(function (e) {
           return '<div class="evidence"><a href="' + esc(safeUrl(e.url)) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a><span class="point">' + esc(e.point) + "</span></div>";
         }).join("") +
-        '<p class="small muted">※ 根拠欄はドキュメントの記載の要旨です。正確な文言はリンク先で確認してください。</p>';
+        '<p class="small muted">※ 根拠欄はドキュメントの記載の要旨です。正確な文言はリンク先で確認してください。</p>' +
+        "<h3>復習</h3><p>" + guideLink(q) + "</p>";
       fb.hidden = false;
     } else {
       fb.hidden = true;
@@ -163,13 +170,13 @@
       b.n += 1; if (sameSet(state.answers[q.id] || [], q.answer)) b.ok += 1;
     });
     $("domScore").innerHTML = "<table><thead><tr><th>分野</th><th>正解</th></tr></thead><tbody>" +
-      Object.keys(byDom).sort().map(function (d) { return "<tr><td>" + domainTag(d) + "</td><td>" + byDom[d].ok + " / " + byDom[d].n + "</td></tr>"; }).join("") +
+      Object.keys(byDom).sort().map(function (d) { return "<tr><td>" + domainLabel(d) + "</td><td>" + byDom[d].ok + " / " + byDom[d].n + "</td></tr>"; }).join("") +
       "</tbody></table>";
 
     $("review").innerHTML = state.list.map(function (q, i) {
       var ok = sameSet(state.answers[q.id] || [], q.answer);
       return '<div class="review-item"><span style="color:var(--' + (ok ? "ok" : "ng") + ')">' + (ok ? "○" : "×") + "</span> " +
-        '<a href="#" data-i="' + i + '">' + esc(q.id) + "</a> " + domainTag(q.domain) +
+        '<a href="#" data-i="' + i + '">' + esc(q.id) + "</a>　" + esc(q.topic) + '　<span class="small muted">' + domainLabel(q.domain) + "</span>" +
         '<div class="small muted">' + esc(q.question.slice(0, 90)) + "…</div></div>";
     }).join("");
     Array.prototype.forEach.call(document.querySelectorAll("#review a[data-i]"), function (a) {

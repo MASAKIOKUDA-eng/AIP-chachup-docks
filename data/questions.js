@@ -13,14 +13,16 @@ window.QUESTIONS = [
     id: "Q01",
     domain: 1,
     task: "1.5 検索（リトリーバル）メカニズムの設計",
+    topic: "RAG の検索とアクセス制御",
+    guide: "svc-kb",
     services: ["Amazon Bedrock Knowledge Bases", "Amazon S3", "Amazon OpenSearch Serverless", "Amazon Cognito", "AWS Lambda"],
     question:
       "SaaS 企業が、500 社のテナント向けに社内文書 Q&A を提供する RAG アプリケーションを構築している。文書は Amazon S3 にテナントごとのプレフィックスで保存し、Amazon Bedrock Knowledge Bases（ベクトルストアは Amazon OpenSearch Serverless）で取り込む。利用者は Amazon Cognito で認証され、ID トークンに tenant_id が含まれる。他テナントの文書が回答に混入しないことを保証しつつ、テナント追加時の運用負荷を最小にしたい。最も適切な設計はどれですか。",
     choices: [
-      "各文書に tenant_id 属性を持つ <ファイル名>.metadata.json を同じ S3 の場所に置いて取り込み、Lambda が検証済みトークンから tenant_id を取り出して Retrieve / RetrieveAndGenerate の vectorSearchConfiguration.filter に equals 条件として付与する",
-      "システムプロンプトに「ユーザーのテナント ID は X です。X 以外の文書は回答に使わないでください」と記載し、取得件数（numberOfResults）を増やして関連文書を確実に拾う",
-      "テナントごとに専用のナレッジベースと OpenSearch Serverless コレクションを作成し、テナント追加のたびに手動でデータソースを設定する",
-      "Amazon Bedrock Guardrails の拒否トピックに他テナントの社名を登録し、他テナントに関する回答をブロックする"
+      ".metadata.json で文書に tenant_id を付与し、Lambda が検証済みトークンの値を Retrieve の equals フィルタに使う",
+      "システムプロンプトに利用者のテナント ID を埋め込み、他テナントの文書は回答に使わないよう指示したうえで、取得件数を増やして関連文書を確実に拾う",
+      "テナントごとに専用のナレッジベースと OpenSearch Serverless コレクションを作り、テナント追加のたびにデータソースと IAM ロールを設定する",
+      "Bedrock Guardrails の拒否トピックに他テナントの社名や製品名を登録し、利用者のテナント以外の内容を含む回答を出力時にブロックする"
     ],
     answer: [0],
     why: [
@@ -47,14 +49,16 @@ window.QUESTIONS = [
     id: "Q02",
     domain: 3,
     task: "3.1 入出力の安全対策の実装",
+    topic: "入出力の安全対策（Guardrails）",
+    guide: "svc-guardrails",
     services: ["Amazon Bedrock Guardrails", "Amazon SageMaker AI", "Amazon Bedrock Knowledge Bases", "AWS Lambda"],
     question:
       "保険会社が、Amazon SageMaker AI のリアルタイムエンドポイントでホストしているファインチューニング済みのオープンモデルを使って、約款に関する RAG チャットを提供している。検索には Amazon Bedrock Knowledge Bases の Retrieve API を使う。監査で (1) 検索した約款に書かれていない内容を回答する「ハルシネーション」と、(2) 回答に顧客の電話番号やマイナンバーなどの個人情報が含まれることが指摘された。モデルを変更せずに両方へ対処したい。最も適切な方法はどれですか。",
     choices: [
-      "SageMaker エンドポイントの InvokeEndpoint 呼び出し時に guardrailIdentifier パラメータを指定し、Bedrock Guardrails を適用する",
-      "Bedrock Guardrails で機密情報フィルタ（該当 PII はマスク）と、しきい値を設定したコンテキストグラウンディングチェックを構成し、Lambda から ApplyGuardrail API を呼び出して、検索結果をグラウンディングソース、質問をクエリとしてモデル出力を評価する",
-      "Amazon Comprehend の PII 検出のみを出力に適用し、ハルシネーションは利用者のフィードバックで後から修正する",
-      "個人情報を出力しないよう、追加の学習データでモデルを再度ファインチューニングする"
+      "InvokeEndpoint の呼び出しに guardrailIdentifier と guardrailVersion を指定し、Guardrails の機密情報フィルタとグラウンディングチェックを SageMaker のモデルに適用する",
+      "Guardrails に PII のマスクとコンテキストグラウンディングチェックを設定し、Lambda から ApplyGuardrail API で検索結果を根拠としてモデル出力を評価する",
+      "モデル出力に Amazon Comprehend の DetectPiiEntities を適用して個人情報をマスクし、ハルシネーションは利用者の低評価を集計して週次で修正する",
+      "個人情報を含まず約款だけに基づいた回答例を追加の学習データとして用意し、SageMaker AI でモデルを再度ファインチューニングして出力を改善する"
     ],
     answer: [1],
     why: [
@@ -82,14 +86,16 @@ window.QUESTIONS = [
     id: "Q03",
     domain: 2,
     task: "2.1 エージェント型 AI とツール連携の実装",
+    topic: "エージェントの本番運用（AgentCore）",
+    guide: "svc-agentcore",
     services: ["Amazon Bedrock AgentCore Runtime", "AgentCore Gateway", "AgentCore Identity", "AWS Lambda", "Amazon Cognito"],
     question:
       "ある企業は、オープンソースのフレームワーク（LangGraph）で開発した調査エージェントを本番運用したい。要件は次のとおり。(1) 1回の調査が最長で数時間かかる。(2) 利用者ごとにセッションを完全に分離する。(3) 社内の REST API と既存の Lambda 関数を、MCP 対応ツールとしてエージェントから使えるようにする。(4) 利用者の代わりに外部 SaaS へ OAuth でアクセスする。エージェントのコードの書き換えを最小限にしたい。最も適切な構成はどれですか。",
     choices: [
-      "エージェントを AWS Lambda にデプロイし、Amazon API Gateway から同期で呼び出す。SaaS のトークンは全利用者共通のものを AWS Secrets Manager に保存する",
-      "エージェントを Amazon Bedrock Agents で作り直し、すべてのツールをアクション グループの OpenAPI スキーマとして定義し直す",
-      "エージェントを Amazon Bedrock AgentCore Runtime にデプロイし、REST API と Lambda を AgentCore Gateway で MCP ツールとして公開する。利用者の認証と SaaS への OAuth 委任は AgentCore Identity（受信は Cognito）で管理する",
-      "エージェントを Amazon ECS on AWS Fargate の 1 つの長時間稼働タスクで動かし、全利用者の会話をそのタスクのメモリ上で管理する"
+      "エージェントを Lambda にデプロイして API Gateway から同期で呼び出し、ツールは Lambda から直接呼ぶ。SaaS のトークンは共通のものを Secrets Manager に保存する",
+      "エージェントを Bedrock Agents で作り直し、社内 API と Lambda をアクション グループの OpenAPI スキーマとして定義し、SaaS の資格情報はセッション属性で渡す",
+      "AgentCore Runtime で動かし、API と Lambda を AgentCore Gateway で MCP ツール化、OAuth 委任は AgentCore Identity で管理する",
+      "エージェントを ECS on Fargate の長時間稼働タスク 1 つで動かし、全利用者の会話状態をタスクのメモリで管理して、SaaS へは利用者ごとの API キーで接続する"
     ],
     answer: [2],
     why: [
@@ -118,14 +124,16 @@ window.QUESTIONS = [
     id: "Q04",
     domain: 2,
     task: "2.1 エージェント型 AI とツール連携の実装",
+    topic: "エージェントのアクション制御",
+    guide: "svc-agents",
     services: ["Amazon Bedrock Agents", "AWS Lambda", "Amazon DynamoDB", "Amazon Bedrock Guardrails"],
     question:
       "EC 事業者が Amazon Bedrock Agents で顧客サポートエージェントを構築している。アクション グループには、注文照会と返金処理の Lambda 関数（注文データは Amazon DynamoDB）を登録している。返金処理だけは、実行前に必ず顧客本人の明示的な同意を得る必要がある。また、悪意のあるプロンプトによって返金が勝手に実行されるリスクを下げたい。追加のカスタムコードを最小にしつつ、最も確実な方法はどれですか。",
     choices: [
-      "エージェントの指示（instruction）に「返金の前には必ず顧客に確認すること」と記載する",
-      "Bedrock Guardrails の拒否トピックに「返金」を登録する",
-      "注文照会と返金処理を別々のエージェントに分け、返金エージェントのモデルをより高性能なものに変更する",
-      "返金処理の関数に requireConfirmation を ENABLED に設定し、エージェントが関数を呼ぶ前に利用者へ確認を求めるようにする。アプリケーションは確認結果を次の InvokeAgent リクエストで返す"
+      "エージェントの指示（instruction）に、返金の前には必ず注文内容と金額を顧客に提示し、明示的な同意を得てから実行するよう記載する",
+      "Bedrock Guardrails の拒否トピックに「返金」を登録し、プロンプト攻撃フィルタの強度を HIGH にして、悪意のある返金依頼を入力時に止める",
+      "注文照会と返金処理を別のエージェントに分け、返金エージェントには推論性能の高いモデルを使い、スーパーバイザーエージェントで振り分ける",
+      "返金関数に requireConfirmation を ENABLED で設定し、実行前に顧客の確認を求め、結果を次の InvokeAgent で返す"
     ],
     answer: [3],
     why: [
@@ -152,15 +160,17 @@ window.QUESTIONS = [
     id: "Q05",
     domain: 4,
     task: "4.1 コスト最適化",
+    topic: "推論コストの最適化",
+    guide: "decide",
     services: ["Amazon Bedrock バッチ推論", "Amazon Bedrock プロンプトキャッシュ", "Amazon S3", "Amazon EventBridge"],
     question:
       "コールセンターを運営する企業が Amazon Bedrock を使っている。【夜間要約】 毎晩、その日の通話記録 約 20 万件を要約し、翌朝 9 時までに結果を S3 に出せばよい。【日中チャット】 日中は、オペレーター支援チャットで毎回同じ約 5,000 トークンの業務マニュアルをプロンプトの先頭に付けて質問している。品質を変えずにコストを下げたい。適切な施策を 2 つ選んでください。",
     choices: [
-      "【夜間要約】 を、入力を JSONL で S3 に置き CreateModelInvocationJob で実行するバッチ推論に切り替え、EventBridge のスケジュールで毎晩起動する",
-      "【夜間要約】 のために Provisioned Throughput を購入し、24 時間確保しておく",
-      "【日中チャット】 で、共通のマニュアル部分の後ろにキャッシュチェックポイントを置き、プロンプトキャッシュを有効にする",
-      "【日中チャット】 で、マニュアルを毎回すべて送る代わりに maxTokens を大きくして回答を詳しくする",
-      "【夜間要約】 を、SQS と Lambda で 1 件ずつオンデマンド推論する構成に変え、並列度を上げる"
+      "夜間要約を、S3 上の JSONL を入力にしたバッチ推論ジョブに切り替え、EventBridge のスケジュールで毎晩起動する",
+      "夜間要約のために Provisioned Throughput を購入してモデルユニットを 24 時間確保し、オンデマンドのクォータに左右されないようにする",
+      "日中チャットで、共通のマニュアル部分の直後にキャッシュチェックポイントを置き、プロンプトキャッシュを有効にする",
+      "日中チャットで、マニュアルを毎回送る代わりに maxTokens を大きくし、モデルが一般知識から詳しい回答を生成できるようにする",
+      "夜間要約を、SQS と Lambda で 1 件ずつオンデマンド推論する構成に変え、Lambda の同時実行数を上げて処理時間を短くする"
     ],
     answer: [0, 2],
     why: [
@@ -189,14 +199,16 @@ window.QUESTIONS = [
     id: "Q06",
     domain: 1,
     task: "1.3 データの検証と処理パイプライン / 1.4 ベクトルストア",
+    topic: "RAG のデータ取り込み（解析・チャンキング）",
+    guide: "svc-kb",
     services: ["Amazon Bedrock Knowledge Bases", "Amazon S3", "Amazon EventBridge", "AWS Lambda"],
     question:
       "製造業の企業が、数百ページある保守マニュアル（PDF）を Amazon Bedrock Knowledge Bases に取り込んでいる。マニュアルには部品表などの複雑な表や図が多く、既定の設定では表の内容に関する質問への回答精度が低い。また、手順の一部だけが検索されて前後の文脈が欠けた回答になることが多い。マニュアルは S3 上で毎日数件更新される。最も効果的な改善策の組み合わせはどれですか。",
     choices: [
-      "チャンクサイズを既定のまま、取得件数（numberOfResults）を最大まで増やす。更新時はナレッジベースを毎晩削除して作り直す",
-      "PDF をすべて画像に変換してから取り込み、固定サイズのチャンクを 50 トークンに縮める",
-      "解析方式に基盤モデルによる解析（BEDROCK_FOUNDATION_MODEL）を設定して表や図を抽出し、階層チャンキング（子チャンクで検索し、親チャンクを返す）を使う。S3 の更新イベントを EventBridge で受けて Lambda から StartIngestionJob を実行し、増分で同期する",
-      "Amazon Comprehend でマニュアルからキーフレーズを抽出し、キーフレーズだけをナレッジベースに取り込む"
+      "チャンクの設定は既定のまま取得件数（numberOfResults）を最大にし、マニュアルの更新時はナレッジベースを毎晩削除して作り直す",
+      "PDF をすべて画像に変換してから取り込み、固定サイズチャンキングのトークン数を 50 に縮めて、検索でヒットする箇所を増やす",
+      "表や図は基盤モデルによる解析、文脈は階層チャンキングで補い、S3 の更新時に StartIngestionJob で増分同期する",
+      "Amazon Comprehend でマニュアルからキーフレーズとエンティティを抽出し、その結果だけをテキストにしてナレッジベースに取り込む"
     ],
     answer: [2],
     why: [
@@ -223,14 +235,16 @@ window.QUESTIONS = [
     id: "Q07",
     domain: 3,
     task: "3.2 データセキュリティとプライバシー / 3.3 ガバナンスとコンプライアンス",
+    topic: "閉域接続と監査ログ",
+    guide: "svc-privatelink",
     services: ["AWS PrivateLink（インターフェイス VPC エンドポイント）", "Amazon Bedrock モデル呼び出しログ", "AWS KMS", "Amazon S3", "AWS CloudTrail"],
     question:
       "金融機関が、VPC 内の Amazon ECS で動くアプリケーションから Amazon Bedrock を利用する。セキュリティ部門の要件は、(1) 通信がインターネットを経由しないこと、(2) すべてのプロンプトと応答の本文を監査用に 7 年間保存すること、(3) 保存データは自社管理の鍵で暗号化すること、(4) 誰がどのモデルを呼び出したかの API 操作履歴を残すこと、である。最も適切な構成はどれですか。",
     choices: [
-      "NAT ゲートウェイ経由で Bedrock のパブリックエンドポイントに接続し、セキュリティグループで送信先を制限する。CloudTrail の証跡だけを有効にしてプロンプトと応答を記録する",
-      "bedrock-runtime のインターフェイス VPC エンドポイント（エンドポイントポリシーで許可する操作を制限）を使う。モデル呼び出しログを有効にして、KMS カスタマーマネージドキーで暗号化した S3 に出力し、ライフサイクルルールで 7 年間保持する。API 操作履歴は CloudTrail で記録する",
-      "アプリケーションでプロンプトと応答を CloudWatch Logs に出力し、ロググループの保持期間を無期限にする。通信はパブリックエンドポイントに TLS で接続する",
-      "VPC ピアリングで Bedrock のサービス VPC と接続し、Amazon Macie でプロンプトを分類して保存する"
+      "NAT ゲートウェイ経由で Bedrock に接続してセキュリティグループで送信先を制限し、CloudTrail のデータイベントでプロンプトと応答を 7 年保存する",
+      "bedrock-runtime の VPC エンドポイントで接続し、呼び出しログを KMS 暗号化した S3 に 7 年保持、API 操作は CloudTrail で記録する",
+      "アプリでプロンプトと応答を CloudWatch Logs に出力して保持期間を無期限にし、Bedrock のパブリックエンドポイントへは TLS 1.2 以上で暗号化して接続する",
+      "VPC ピアリングで Bedrock のサービス VPC と接続し、Amazon Macie でプロンプトを分類してから、機密度に応じて S3 Glacier に保存する"
     ],
     answer: [1],
     why: [
@@ -257,14 +271,16 @@ window.QUESTIONS = [
     id: "Q08",
     domain: 5,
     task: "5.1 生成 AI の評価の仕組みの実装",
+    topic: "RAG の評価と品質ゲート",
+    guide: "svc-eval",
     services: ["Amazon Bedrock Evaluations", "Amazon Bedrock Knowledge Bases", "Amazon S3", "AWS CodePipeline / CodeBuild"],
     question:
       "社内ヘルプデスク向け RAG を運用しているチームが、チャンキング方式と生成モデルの変更を検討している。変更のたびに (1) 検索結果が質問に関連しているか、(2) 回答が正しく、検索した文書に忠実か（ハルシネーションがないか）を自動で評価し、基準を下回る変更は本番に出さないようにしたい。評価のための大規模な人手は用意できない。最も適切な方法はどれですか。",
     choices: [
-      "本番リリース後に CloudWatch で InvocationLatency と Invocations を監視し、問題があればロールバックする",
-      "変更のたびに社員 50 名に回答を 5 段階で評価してもらい、平均点で判断する",
-      "質問と正解（ground truth）のデータセットを S3 に用意し、Bedrock のナレッジベース評価ジョブを使う。検索のみの評価でコンテキストの関連性と網羅性を、検索と生成の評価で LLM-as-a-judge による正確性と忠実性を測る。CodePipeline から評価を実行し、スコアがしきい値未満ならデプロイを止める",
-      "一般的なベンチマークデータセットで生成モデル単体の自動評価（ROUGE など）だけを行う"
+      "本番リリース後に CloudWatch で InvocationLatency と Invocations を監視し、利用者からの低評価が増えたら前のバージョンにロールバックする",
+      "変更のたびに社員 50 名に回答を 5 段階で評価してもらい、平均点が前のバージョンを上回った場合だけ本番にリリースする",
+      "正解付きの質問セットで Bedrock のナレッジベース評価（検索のみ、検索と生成）を実行し、CodePipeline でしきい値未満のデプロイを止める",
+      "公開されているベンチマークデータセットで生成モデル単体の自動評価（ROUGE、BERTScore など）を行い、スコアが高いモデルを採用する"
     ],
     answer: [2],
     why: [
@@ -291,15 +307,17 @@ window.QUESTIONS = [
     id: "Q09",
     domain: 5,
     task: "5.2 生成 AI アプリケーションのトラブルシューティング / 4.2 パフォーマンス",
+    topic: "スロットリング対策",
+    guide: "svc-bedrock",
     services: ["Amazon Bedrock クロスリージョン推論", "Amazon SQS", "AWS Lambda", "Amazon CloudWatch"],
     question:
       "小売企業の商品説明生成アプリは、Amazon Bedrock をオンデマンドで呼び出している。セール前の夕方に、管理画面からの一括生成リクエストが集中し、ThrottlingException（HTTP 429）が多発して処理が失敗する。CloudWatch の InvocationThrottles メトリクスも同じ時間帯に増えている。データの処理リージョンは米国内であれば問題ない。根本的に失敗を減らす施策を 2 つ選んでください。",
     choices: [
-      "一括生成リクエストを Amazon SQS に入れ、Lambda で取り出して呼び出す非同期の構成にし、失敗時はジッター付きの指数バックオフで再試行する",
-      "呼び出し元 Lambda の予約済み同時実行数を増やし、より多くのリクエストを同時に送る",
-      "米国のクロスリージョン推論プロファイルを指定して呼び出し、複数リージョンの処理能力を使う",
-      "SDK の自動再試行を無効にして、エラーをすぐ利用者に返す",
-      "モデルのパラメータ temperature を 0 にして生成を高速化する"
+      "一括生成を SQS に入れて Lambda で順に処理し、ThrottlingException はジッター付き指数バックオフで再試行する",
+      "呼び出し元 Lambda の予約済み同時実行数を増やし、セール前の時間帯は、より多くのリクエストを並列で Bedrock に送れるようにしておく",
+      "モデル ID の代わりに米国のクロスリージョン推論プロファイルを指定して呼び出し、米国内の複数リージョンの処理能力を使う",
+      "SDK の自動再試行を無効にしてエラーをすぐ管理画面に返し、利用者に時間をおいて再実行するよう案内メッセージを表示する",
+      "モデルのパラメータ temperature を 0 にし、top_p も下げて出力のばらつきを抑えることで、1 件あたりの生成を速くする"
     ],
     answer: [0, 2],
     why: [
@@ -329,14 +347,16 @@ window.QUESTIONS = [
     id: "Q10",
     domain: 2,
     task: "2.4 基盤モデル API の統合 / 2.5 アプリケーション統合パターン",
+    topic: "ストリーミング応答と会話履歴",
+    guide: "svc-apigw",
     services: ["Amazon API Gateway（WebSocket API）", "AWS Lambda", "Amazon Bedrock（ConverseStream）", "Amazon DynamoDB", "Amazon Cognito"],
     question:
       "スタートアップ企業が、ブラウザ向けの AI アシスタントを開発している。要件は、(1) 回答を生成しながら 1 文字ずつ画面に表示し、体感の待ち時間を短くする、(2) ログインした利用者ごとに会話履歴を保持し、30 日経過した履歴は自動で削除する、(3) サーバーを管理しない、である。最も適切な構成はどれですか。",
     choices: [
-      "API Gateway の REST API から Lambda を同期で呼び出し、InvokeModel で回答全体を生成してから返す。履歴は Lambda の /tmp に保存する",
-      "ブラウザから数秒ごとに S3 の結果ファイルをポーリングし、Lambda が生成した回答全文を S3 に書き込む。履歴は S3 にテキストで追記する",
-      "Amazon EC2 上に WebSocket サーバーを構築し、会話履歴をインスタンスのメモリに保持する",
-      "API Gateway の WebSocket API を使い、$connect ルートの Lambda オーソライザーで Cognito のトークンを検証する。Lambda で ConverseStream を呼び、受け取った差分（delta）を @connections API で順次クライアントに送る。会話履歴は利用者 ID をキーに DynamoDB に保存し、TTL 属性で 30 日後に自動削除する"
+      "REST API から Lambda を同期で呼び、InvokeModel で回答全体を生成してから返す。会話履歴は Lambda の /tmp に利用者 ID ごとのファイルで保存する",
+      "Lambda が生成した回答全文を S3 に書き込み、ブラウザが数秒ごとにポーリングして表示する。会話履歴は S3 の利用者ごとのテキストファイルに追記していく",
+      "EC2 上に WebSocket サーバーを構築して回答を逐次送信し、会話履歴はインスタンスのメモリに保持して、30 日ごとにプロセスを再起動して消す",
+      "WebSocket API と Lambda で ConverseStream の差分を順次送り、Cognito で接続を認証し、履歴は DynamoDB の TTL で消す"
     ],
     answer: [3],
     why: [
