@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIP-C01 問題集</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/common.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="brand">AIP-C01 キャッチアップ</a>
+    <nav class="nav">
+      <a href="index.html">ホーム</a>
+      <a href="quiz.html" class="active">問題集</a>
+      <a href="guide.html">アーキテクチャガイド</a>
+    </nav>
+    <span class="spacer"></span>
+    <button id="themeBtn" class="icon-btn" type="button" aria-label="テーマ切替">◐</button>
+  </header>
+
+  <main class="wrap">
+    <!-- ホーム -->
+    <section id="home">
+      <div class="hero">
+        <h1>問題集（サンプル <span id="total">0</span> 問）</h1>
+        <p class="muted">複数の AWS サービスを組み合わせる、実務に近いシナリオ問題です。解答後に、選択肢ごとの正誤理由、正解のアーキテクチャ、根拠となる AWS ドキュメントを表示します。</p>
+      </div>
+      <div class="card">
+        <h2>出題設定</h2>
+        <p class="small muted">出題する分野</p>
+        <div id="domainFilter" class="filters"></div>
+        <p class="small">
+          <label><input type="checkbox" id="shuffleQ"> 問題の順番をシャッフル</label>
+          <label><input type="checkbox" id="shuffleC" checked> 選択肢をシャッフル</label>
+        </p>
+        <div class="actions" style="justify-content:flex-start">
+          <button id="startBtn" class="btn primary" type="button">開始する</button>
+          <button id="wrongBtn" class="btn" type="button">前回間違えた問題だけ解く</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>収録問題と学習の記録</h2>
+        <div id="historyTable" class="table-scroll"></div>
+        <p class="small muted">記録はこのブラウザにのみ保存されます。</p>
+        <button id="resetBtn" class="btn" type="button">記録を消去</button>
+      </div>
+    </section>
+
+    <!-- 出題 -->
+    <section id="quiz" hidden>
+      <div class="card">
+        <div class="qhead"><span id="qProgress" class="muted"></span><span id="qDomain"></span></div>
+        <div class="progress"><div id="bar"></div></div>
+        <div id="qServices"></div>
+        <p id="qText" class="qtext"></p>
+        <p id="qHint" class="hint"></p>
+        <div id="choices" class="choices"></div>
+        <div class="actions">
+          <button id="prevBtn" class="btn" type="button">前へ</button>
+          <button id="checkBtn" class="btn primary" type="button">解答する</button>
+          <button id="nextBtn" class="btn primary" type="button" hidden>次の問題へ</button>
+        </div>
+        <div id="feedback" hidden></div>
+      </div>
+      <button id="quitBtn" class="btn" type="button">設定に戻る</button>
+    </section>
+
+    <!-- 結果 -->
+    <section id="result" hidden>
+      <div class="card" style="text-align:center"><h2>結果</h2><div id="score"></div></div>
+      <div class="card"><h2>分野別</h2><div id="domScore" class="table-scroll"></div></div>
+      <div class="card"><h2>振り返り</h2><p class="small muted">問題番号を押すと、解説を見直せます。</p><div id="review"></div></div>
+      <div class="actions" style="justify-content:center">
+        <button id="againBtn" class="btn primary" type="button">もう一度</button>
+        <button id="homeBtn" class="btn" type="button">設定に戻る</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="data/questions.js"></script>
+  <script src="js/quiz.js"></script>
+</body>
+</html>
