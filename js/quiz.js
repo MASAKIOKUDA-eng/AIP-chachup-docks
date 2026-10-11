@@ -19,6 +19,8 @@
   function loadHistory() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
   function saveHistory(h) { try { localStorage.setItem(STORE, JSON.stringify(h)); } catch (e) {} }
   function domainTag(d) { return '<span class="tag dtag d' + d + '">D' + d + " " + esc(window.DOMAINS[d].name) + "</span>"; }
+  // 根拠リンクは https のみ許可（データに javascript: などが混入しても実行されないように）
+  function safeUrl(u) { return /^https:\/\//.test(u) ? u : "#"; }
   function isMulti(q) { return q.answer.length > 1; }
   function sameSet(a, b) { return a.length === b.length && a.slice().sort().join() === b.slice().sort().join(); }
 
@@ -37,7 +39,7 @@
     var rows = window.QUESTIONS.map(function (q) {
       var r = h[q.id];
       var mark = !r ? '<span class="muted">未回答</span>' : r.last ? '<span style="color:var(--ok)">○ 正解</span>' : '<span style="color:var(--ng)">× 不正解</span>';
-      return "<tr><td>" + q.id + "</td><td>" + domainTag(q.domain) + '</td><td class="small">' +
+      return "<tr><td>" + esc(q.id) + "</td><td>" + domainTag(q.domain) + '</td><td class="small">' +
         q.services.map(esc).join(" / ") + "</td><td>" + mark + "</td></tr>";
     }).join("");
     $("historyTable").innerHTML = "<table><thead><tr><th>問題</th><th>分野</th><th>組み合わせるサービス</th><th>前回</th></tr></thead><tbody>" + rows + "</tbody></table>";
@@ -116,7 +118,7 @@
         "<h3>解説</h3><p>" + esc(q.explanation) + "</p>" +
         "<h3>正解のアーキテクチャ（処理の流れ）</h3><ol class=\"flow\">" + q.flow.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ol>" +
         "<h3>根拠となる AWS ドキュメント</h3>" + q.evidence.map(function (e) {
-          return '<div class="evidence"><a href="' + esc(e.url) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a><span class="point">' + esc(e.point) + "</span></div>";
+          return '<div class="evidence"><a href="' + esc(safeUrl(e.url)) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a><span class="point">' + esc(e.point) + "</span></div>";
         }).join("") +
         '<p class="small muted">※ 根拠欄はドキュメントの記載の要旨です。正確な文言はリンク先で確認してください。</p>';
       fb.hidden = false;
@@ -167,7 +169,7 @@
     $("review").innerHTML = state.list.map(function (q, i) {
       var ok = sameSet(state.answers[q.id] || [], q.answer);
       return '<div class="review-item"><span style="color:var(--' + (ok ? "ok" : "ng") + ')">' + (ok ? "○" : "×") + "</span> " +
-        '<a href="#" data-i="' + i + '">' + q.id + "</a> " + domainTag(q.domain) +
+        '<a href="#" data-i="' + i + '">' + esc(q.id) + "</a> " + domainTag(q.domain) +
         '<div class="small muted">' + esc(q.question.slice(0, 90)) + "…</div></div>";
     }).join("");
     Array.prototype.forEach.call(document.querySelectorAll("#review a[data-i]"), function (a) {
