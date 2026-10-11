@@ -39,6 +39,13 @@ AWS Certified Generative AI Developer – Professional（**AIP-C01**）の出題
 - `answer` は正解の選択肢の index の配列です。2 つ以上なら複数選択問題になります。
 - `why` は選択肢ごとの正誤理由（`choices` と同じ順番）です。
 - `evidence` には根拠となる AWS ドキュメントの `title` / `url` / `point`（記載の要旨）を入れます。
+- `topic` は知識分野（例：「RAG の検索とアクセス制御」）、`guide` はアーキテクチャガイドの見出しの ID です。出題画面に試験分野・タスクと一緒に表示し、解答後に `guide` のガイドへのリンクを出します。
+
+追加・修正したら、次のコマンドでデータを検査します。正解の選択肢が一番長い（長さで正解がわかってしまう）場合もエラーになります。
+
+```
+node tools/check-questions.js
+```
 
 ## ファイル構成
 
@@ -50,6 +57,7 @@ css/style.css       スタイル（ライト/ダーク、スマホ対応）
 js/common.js        テーマ切替
 js/quiz.js          出題・採点・記録
 data/questions.js   問題データ
+tools/check-questions.js  問題データの検査
 ```
 
 ## GitHub Pages での公開
