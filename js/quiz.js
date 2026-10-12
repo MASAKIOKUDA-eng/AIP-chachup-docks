@@ -24,34 +24,71 @@
   }
   // 根拠リンクは https のみ許可（データに javascript: などが混入しても実行されないように）
   function safeUrl(u) { return /^https:\/\//.test(u) ? u : "#"; }
+  // 判断基準とした Well-Architected のベストプラクティス
+  function waBlock(q) {
+    var w = window.WA[q.wa];
+    if (!w) return "";
+    return "<h3>判断基準（Well-Architected Generative AI Lens）</h3><p>" + esc(window.PILLARS[w[0]]) + "の柱　" +
+      '<a href="' + esc(window.waUrl(q.wa)) + '" target="_blank" rel="noopener">' + esc(q.wa) + "　" + esc(w[1]) + "</a></p>";
+  }
+  function evidenceList(q) {
+    var list = q.evidence.slice();
+    q.ref.forEach(function (k) { var d = window.DOCS[k]; if (d) list.push({ title: d[0], url: d[1] }); });
+    return list;
+  }
   function isMulti(q) { return q.answer.length > 1; }
   function sameSet(a, b) { return a.length === b.length && a.slice().sort().join() === b.slice().sort().join(); }
 
   // ---- ホーム ----
-  function renderHome() {
-    var h = loadHistory();
-    var box = $("domainFilter");
+  // 分野の選択肢には、選んでいる回の問題数を表示する（選択の状態は保つ）
+  function renderDomainFilter() {
+    var setEl = document.querySelector("input[name=set]:checked");
+    var set = setEl ? Number(setEl.value) : 1;
+    var prev = {};
+    Array.prototype.forEach.call(document.querySelectorAll("input[name=dom]"), function (e) { prev[e.value] = e.checked; });
     var html = "";
     Object.keys(window.DOMAINS).forEach(function (d) {
-      var n = window.QUESTIONS.filter(function (q) { return String(q.domain) === d; }).length;
-      html += '<label><input type="checkbox" name="dom" value="' + d + '" checked> ' + domainLabel(d) + "（" + n + "問）</label>";
+      var n = window.QUESTIONS.filter(function (q) { return q.set === set && String(q.domain) === d; }).length;
+      var on = prev[d] === undefined ? true : prev[d];
+      html += '<label><input type="checkbox" name="dom" value="' + d + '"' + (on ? " checked" : "") + "> " + domainLabel(d) + "（" + n + "問）</label>";
     });
-    box.innerHTML = html;
+    $("domainFilter").innerHTML = html;
+  }
+
+  function renderHome() {
+    var h = loadHistory();
+    var sets = "";
+    for (var n = 1; n <= window.SET_COUNT; n++) {
+      var cnt = window.QUESTIONS.filter(function (q) { return q.set === n; }).length;
+      sets += '<label><input type="radio" name="set" value="' + n + '"' + (n === 1 ? " checked" : "") + (cnt ? "" : " disabled") +
+        "> 第" + n + "回（" + (cnt ? cnt + "問" : "準備中") + "）</label>";
+    }
+    $("setFilter").innerHTML = sets;
+    renderDomainFilter();
+    Array.prototype.forEach.call(document.querySelectorAll("input[name=set]"), function (r) {
+      r.addEventListener("change", renderDomainFilter);
+    });
     $("total").textContent = window.QUESTIONS.length;
 
-    var rows = window.QUESTIONS.map(function (q) {
-      var r = h[q.id];
-      var mark = !r ? '<span class="muted">未回答</span>' : r.last ? '<span style="color:var(--ok)">○ 正解</span>' : '<span style="color:var(--ng)">× 不正解</span>';
-      return "<tr><td>" + esc(q.id) + '</td><td class="small">' + domainLabel(q.domain) + "</td><td>" + esc(q.topic) + "</td><td>" + mark + "</td></tr>";
-    }).join("");
-    $("historyTable").innerHTML = "<table><thead><tr><th>問題</th><th>試験分野</th><th>知識分野</th><th>前回</th></tr></thead><tbody>" + rows + "</tbody></table>";
+    var rows = "";
+    for (var k = 1; k <= window.SET_COUNT; k++) {
+      var qs = window.QUESTIONS.filter(function (q) { return q.set === k; });
+      if (!qs.length) continue;
+      var done = qs.filter(function (q) { return h[q.id]; });
+      var ok = done.filter(function (q) { return h[q.id].last; }).length;
+      rows += "<tr><td>第" + k + "回</td><td>" + qs.length + "</td><td>" + done.length + "</td><td>" + ok + "</td><td>" +
+        (done.length ? Math.round(ok / done.length * 100) + "%" : "—") + "</td></tr>";
+    }
+    $("historyTable").innerHTML = "<table><thead><tr><th>回</th><th>問題数</th><th>解答済み</th><th>前回正解</th><th>正答率</th></tr></thead><tbody>" + rows + "</tbody></table>";
   }
 
   function start(onlyWrong) {
     var doms = Array.prototype.map.call(document.querySelectorAll("input[name=dom]:checked"), function (e) { return Number(e.value); });
     var h = loadHistory();
+    var setEl = document.querySelector("input[name=set]:checked");
+    var set = setEl ? Number(setEl.value) : 1;
     var list = window.QUESTIONS.filter(function (q) {
-      return doms.indexOf(q.domain) >= 0 && (!onlyWrong || (h[q.id] && !h[q.id].last));
+      return q.set === set && doms.indexOf(q.domain) >= 0 && (!onlyWrong || (h[q.id] && !h[q.id].last));
     });
     if (!list.length) { alert(onlyWrong ? "間違えた問題はありません。" : "出題範囲を1つ以上選んでください。"); return; }
     if ($("shuffleQ").checked) list = shuffle(list);
@@ -78,7 +115,7 @@
     var checked = !!state.checked[q.id];
     var multi = isMulti(q);
 
-    $("qProgress").textContent = (state.idx + 1) + " / " + state.list.length + "（" + q.id + "）";
+    $("qProgress").textContent = "第" + q.set + "回　" + (state.idx + 1) + " / " + state.list.length + "（問題 " + q.id + "）";
     $("bar").style.width = ((state.idx + 1) / state.list.length * 100) + "%";
     // 解答前から、どの分野・知識を問う問題かを示す
     $("qMeta").innerHTML =
@@ -122,12 +159,14 @@
       fb.innerHTML =
         '<p class="result-line ' + (ok ? "ok" : "ng") + '">' + (ok ? "正解" : "不正解（正解は " + correctLetters + "）") + "</p>" +
         "<h3>解説</h3><p>" + esc(q.explanation) + "</p>" +
-        "<h3>正解のアーキテクチャ（処理の流れ）</h3><ol class=\"flow\">" + q.flow.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ol>" +
-        "<h3>根拠となる AWS ドキュメント</h3>" + q.evidence.map(function (e) {
-          return '<div class="evidence"><a href="' + esc(safeUrl(e.url)) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a><span class="point">' + esc(e.point) + "</span></div>";
+        (q.flow.length ? "<h3>正解のアーキテクチャ（処理の流れ）</h3><ol class=\"flow\">" + q.flow.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ol>" : "") +
+        waBlock(q) +
+        "<h3>根拠となる AWS ドキュメント</h3>" + evidenceList(q).map(function (e) {
+          return '<div class="evidence"><a href="' + esc(safeUrl(e.url)) + '" target="_blank" rel="noopener">' + esc(e.title) + "</a>" +
+            (e.point ? '<span class="point">' + esc(e.point) + "</span>" : "") + "</div>";
         }).join("") +
         '<p class="small muted">※ 根拠欄はドキュメントの記載の要旨です。正確な文言はリンク先で確認してください。</p>' +
-        "<h3>復習</h3><p>" + guideLink(q) + "</p>";
+        (q.guide ? "<h3>復習</h3><p>" + guideLink(q) + "</p>" : "");
       fb.hidden = false;
     } else {
       fb.hidden = true;
@@ -172,6 +211,17 @@
     $("domScore").innerHTML = "<table><thead><tr><th>分野</th><th>正解</th></tr></thead><tbody>" +
       Object.keys(byDom).sort().map(function (d) { return "<tr><td>" + domainLabel(d) + "</td><td>" + byDom[d].ok + " / " + byDom[d].n + "</td></tr>"; }).join("") +
       "</tbody></table>";
+
+    var byPillar = {};
+    state.list.forEach(function (q) {
+      var p = window.WA[q.wa] ? window.WA[q.wa][0] : "-";
+      var b = byPillar[p] || (byPillar[p] = { n: 0, ok: 0 });
+      b.n += 1; if (sameSet(state.answers[q.id] || [], q.answer)) b.ok += 1;
+    });
+    $("pillarScore").innerHTML = "<table><thead><tr><th>Well-Architected の柱</th><th>正解</th></tr></thead><tbody>" +
+      Object.keys(window.PILLARS).filter(function (p) { return byPillar[p]; }).map(function (p) {
+        return "<tr><td>" + esc(window.PILLARS[p]) + "</td><td>" + byPillar[p].ok + " / " + byPillar[p].n + "</td></tr>";
+      }).join("") + "</tbody></table>";
 
     $("review").innerHTML = state.list.map(function (q, i) {
       var ok = sameSet(state.answers[q.id] || [], q.answer);

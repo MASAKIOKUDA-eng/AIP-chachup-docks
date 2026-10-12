@@ -25,11 +25,13 @@
     <!-- ホーム -->
     <section id="home">
       <div class="hero">
-        <h1>問題集（サンプル <span id="total">0</span> 問）</h1>
-        <p class="muted">複数の AWS サービスを組み合わせる、実務に近いシナリオ問題です。解答後に、選択肢ごとの正誤理由、正解のアーキテクチャ、根拠となる AWS ドキュメントを表示します。</p>
+        <h1>問題集（全 <span id="total">0</span> 問）</h1>
+        <p class="muted">実際のユースケースを想定し、複数の AWS サービスを組み合わせて設計する問題です。1 回あたり 75 問で、試験の配点どおりに分野を配分しています。正解は AWS Well-Architected Framework の Generative AI Lens に沿っているかどうかで決めており、解答後に判断基準としたベストプラクティスと根拠のドキュメントを表示します。</p>
       </div>
       <div class="card">
         <h2>出題設定</h2>
+        <p class="small muted">回</p>
+        <div id="setFilter" class="filters"></div>
         <p class="small muted">出題する分野</p>
         <div id="domainFilter" class="filters"></div>
         <p class="small">
@@ -42,7 +44,7 @@
         </div>
       </div>
       <div class="card">
-        <h2>収録問題と学習の記録</h2>
+        <h2>学習の記録</h2>
         <div id="historyTable" class="table-scroll"></div>
         <p class="small muted">記録はこのブラウザにのみ保存されます。</p>
         <button id="resetBtn" class="btn" type="button">記録を消去</button>
@@ -72,6 +74,7 @@
     <section id="result" hidden>
       <div class="card"><h2>結果</h2><div id="score"></div></div>
       <div class="card"><h2>分野別</h2><div id="domScore" class="table-scroll"></div></div>
+      <div class="card"><h2>Well-Architected の柱別</h2><div id="pillarScore" class="table-scroll"></div></div>
       <div class="card"><h2>振り返り</h2><p class="small muted">問題番号を押すと、解説を見直せます。</p><div id="review"></div></div>
       <div class="actions">
         <button id="againBtn" class="btn primary" type="button">もう一度</button>
@@ -80,7 +83,31 @@
     </section>
   </main>
 
-  <script src="data/questions.js"></script>
+  <script src="data/meta.js"></script>
+  <script src="data/set1-a.js"></script>
+  <script src="data/set1-b.js"></script>
+  <script src="data/set1-c.js"></script>
+  <script src="data/set1-d.js"></script>
+  <script src="data/set2-a.js"></script>
+  <script src="data/set2-b.js"></script>
+  <script src="data/set2-c.js"></script>
+  <script src="data/set2-d.js"></script>
+  <script src="data/set3-a.js"></script>
+  <script src="data/set3-b.js"></script>
+  <script src="data/set3-c.js"></script>
+  <script src="data/set3-d.js"></script>
+  <script src="data/set4-a.js"></script>
+  <script src="data/set4-b.js"></script>
+  <script src="data/set4-c.js"></script>
+  <script src="data/set4-d.js"></script>
+  <script src="data/set5-a.js"></script>
+  <script src="data/set5-b.js"></script>
+  <script src="data/set5-c.js"></script>
+  <script src="data/set5-d.js"></script>
+  <script src="data/set6-a.js"></script>
+  <script src="data/set6-b.js"></script>
+  <script src="data/set6-c.js"></script>
+  <script src="data/set6-d.js"></script>
   <script src="js/quiz.js"></script>
 </body>
 </html>
