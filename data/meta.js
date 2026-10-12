@@ -158,13 +158,30 @@ window.QUESTIONS = [];
 //   d: 試験分野(1-5)  t: タスク  svc: 関連サービス  q: 問題文  c: 選択肢  a: 正解の index（数値か配列）
 //   why: 選択肢ごとの理由  exp: 解説（Well-Architected に沿う理由を含める）  wa: ベストプラクティス ID
 //   ref: DOCS のキーの配列  guide: アーキテクチャガイドの見出し ID（任意）
+// 選択肢の並びは、問題 ID から決まる固定の順番に並べ替える（シャッフルを切っても正解の位置が偏らないように）
+function seededOrder(key, n) {
+  var h = 2166136261;
+  for (var i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  var order = [];
+  for (var k = 0; k < n; k++) order.push(k);
+  for (var j = n - 1; j > 0; j--) {
+    h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0;
+    var r = h % (j + 1), t = order[j]; order[j] = order[r]; order[r] = t;
+  }
+  return order;
+}
+
 window.addQuestions = function (set, list) {
   var n = window.QUESTIONS.filter(function (x) { return x.set === set; }).length;
   list.forEach(function (o) {
     n += 1;
-    var answer = o.answer || o.a;
+    var id = set + "-" + String(n).padStart(2, "0");
+    var answer = o.answer !== undefined ? o.answer : o.a;
+    answer = Array.isArray(answer) ? answer : [answer];
+    var choices = o.choices || o.c;
+    var order = seededOrder(id, choices.length); // order[新しい位置] = 元の位置
     window.QUESTIONS.push({
-      id: set + "-" + String(n).padStart(2, "0"),
+      id: id,
       set: set,
       domain: o.domain || o.d,
       task: o.task || o.t,
@@ -172,9 +189,9 @@ window.addQuestions = function (set, list) {
       guide: o.guide,
       services: o.services || o.svc || [],
       question: o.question || o.q,
-      choices: o.choices || o.c,
-      answer: Array.isArray(answer) ? answer : [answer],
-      why: o.why,
+      choices: order.map(function (i) { return choices[i]; }),
+      answer: answer.map(function (a) { return order.indexOf(a); }),
+      why: o.why ? order.map(function (i) { return o.why[i]; }) : o.why,
       explanation: o.explanation || o.exp,
       flow: o.flow || [],
       wa: o.wa,

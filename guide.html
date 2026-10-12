@@ -43,6 +43,7 @@
         <li><a href="#integration">アプリケーション統合・API</a></li>
         <li><a href="#security">セキュリティ、ID、コンプライアンス</a></li>
         <li><a href="#ops">管理とガバナンス（監視・コスト）</a></li>
+        <li><a href="#wa">Well-Architected Generative AI Lens</a></li>
         <li><a href="#refs">参考資料</a></li>
       </ol>
     </div>
@@ -365,8 +366,94 @@
       </dl></div>
     </section>
 
+    <section id="wa">
+      <h2>10. Well-Architected Generative AI Lens のベストプラクティス</h2>
+      <p>問題集の正解は、AWS Well-Architected Framework の Generative AI Lens に沿っているかどうかで決めています。6 つの柱のベストプラクティスを、各回の 75 問ですべて扱っています。解答後に、判断基準としたベストプラクティスへのリンクを表示します。</p>
+      <h3>運用上の優秀性</h3>
+      <div class="table-scroll"><table>
+        <tbody>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops01-bp01.html" target="_blank" rel="noopener">GENOPS01-BP01</a></td><td>機能面の性能を定期的に評価する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops01-bp02.html" target="_blank" rel="noopener">GENOPS01-BP02</a></td><td>利用者のフィードバックを収集して監視する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops02-bp01.html" target="_blank" rel="noopener">GENOPS02-BP01</a></td><td>アプリケーションのすべての層を監視する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops02-bp02.html" target="_blank" rel="noopener">GENOPS02-BP02</a></td><td>基盤モデルのメトリクスを監視する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops02-bp03.html" target="_blank" rel="noopener">GENOPS02-BP03</a></td><td>システムの過負荷のリスクを軽減する仕組みを実装する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops03-bp01.html" target="_blank" rel="noopener">GENOPS03-BP01</a></td><td>プロンプトテンプレートを管理する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops03-bp02.html" target="_blank" rel="noopener">GENOPS03-BP02</a></td><td>エージェントと RAG のワークフローのトレースを有効にする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops04-bp01.html" target="_blank" rel="noopener">GENOPS04-BP01</a></td><td>生成 AI アプリケーションのライフサイクルを IaC で自動化する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops04-bp02.html" target="_blank" rel="noopener">GENOPS04-BP02</a></td><td>GenAIOps を実装してアプリケーションのライフサイクルを最適化する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genops05-bp01.html" target="_blank" rel="noopener">GENOPS05-BP01</a></td><td>モデルをカスタマイズすべき場面を見極める</td></tr>
+        </tbody>
+      </table></div>
+      <h3>セキュリティ</h3>
+      <div class="table-scroll"><table>
+        <tbody>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec01-bp01.html" target="_blank" rel="noopener">GENSEC01-BP01</a></td><td>基盤モデルのエンドポイントへのアクセスを最小権限にする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec01-bp02.html" target="_blank" rel="noopener">GENSEC01-BP02</a></td><td>基盤モデルとアプリケーションの間をプライベートな通信にする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec01-bp03.html" target="_blank" rel="noopener">GENSEC01-BP03</a></td><td>データストアにアクセスする基盤モデルの権限を最小にする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec01-bp04.html" target="_blank" rel="noopener">GENSEC01-BP04</a></td><td>生成 AI サービスと基盤モデルへのアクセスを監視する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec02-bp01.html" target="_blank" rel="noopener">GENSEC02-BP01</a></td><td>ガードレールで有害または誤ったモデルの応答を軽減する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec03-bp01.html" target="_blank" rel="noopener">GENSEC03-BP01</a></td><td>コントロールプレーンとデータアクセスを監視する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec04-bp01.html" target="_blank" rel="noopener">GENSEC04-BP01</a></td><td>安全なプロンプトカタログを実装する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec04-bp02.html" target="_blank" rel="noopener">GENSEC04-BP02</a></td><td>基盤モデルへの利用者の入力を無害化し検証する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec05-bp01.html" target="_blank" rel="noopener">GENSEC05-BP01</a></td><td>エージェントのワークフローに最小権限とアクセス許可の境界を設ける</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensec06-bp01.html" target="_blank" rel="noopener">GENSEC06-BP01</a></td><td>モデルの学習ワークフローにデータの浄化フィルタを実装する</td></tr>
+        </tbody>
+      </table></div>
+      <h3>信頼性</h3>
+      <div class="table-scroll"><table>
+        <tbody>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel01-bp01.html" target="_blank" rel="noopener">GENREL01-BP01</a></td><td>利用状況に応じて基盤モデルのスループットを拡張・分散する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel02-bp01.html" target="_blank" rel="noopener">GENREL02-BP01</a></td><td>モデルのエンドポイントと周辺基盤の間のネットワークを冗長化する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel03-bp01.html" target="_blank" rel="noopener">GENREL03-BP01</a></td><td>ロジックでプロンプトの流れを管理し、障害から適切に回復する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel03-bp02.html" target="_blank" rel="noopener">GENREL03-BP02</a></td><td>エージェントのワークフローにタイムアウトの仕組みを実装する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel04-bp02.html" target="_blank" rel="noopener">GENREL04-BP02</a></td><td>モデルカタログを実装する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel05-bp01.html" target="_blank" rel="noopener">GENREL05-BP01</a></td><td>利用可能なすべてのリージョンに推論リクエストを分散する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel05-bp02.html" target="_blank" rel="noopener">GENREL05-BP02</a></td><td>埋め込みデータを利用可能なすべてのリージョンに複製する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel05-bp03.html" target="_blank" rel="noopener">GENREL05-BP03</a></td><td>エージェントの機能がすべてのリージョンで利用できることを確認する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genrel06-bp01.html" target="_blank" rel="noopener">GENREL06-BP01</a></td><td>高性能な分散処理タスクを耐障害性のある設計にする</td></tr>
+        </tbody>
+      </table></div>
+      <h3>パフォーマンス効率</h3>
+      <div class="table-scroll"><table>
+        <tbody>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf01-bp01.html" target="_blank" rel="noopener">GENPERF01-BP01</a></td><td>プロンプトと応答の正解データセットを定義する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf01-bp02.html" target="_blank" rel="noopener">GENPERF01-BP02</a></td><td>生成 AI ワークロードの性能メトリクスを収集する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf02-bp01.html" target="_blank" rel="noopener">GENPERF02-BP01</a></td><td>モデルのエンドポイントを負荷試験する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf02-bp02.html" target="_blank" rel="noopener">GENPERF02-BP02</a></td><td>推論パラメータを最適化して応答の品質を高める</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf02-bp03.html" target="_blank" rel="noopener">GENPERF02-BP03</a></td><td>用途に合ったモデルを選び、カスタマイズする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf03-bp01.html" target="_blank" rel="noopener">GENPERF03-BP01</a></td><td>モデルのホスティング、カスタマイズ、データアクセスにマネージドなサービスを使う</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf04-bp01.html" target="_blank" rel="noopener">GENPERF04-BP01</a></td><td>ベクトル埋め込みをレイテンシと関連性の観点でテストする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/genperf04-bp02.html" target="_blank" rel="noopener">GENPERF04-BP02</a></td><td>用途に合わせてベクトルのサイズを最適化する</td></tr>
+        </tbody>
+      </table></div>
+      <h3>コスト最適化</h3>
+      <div class="table-scroll"><table>
+        <tbody>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost01-bp01.html" target="_blank" rel="noopener">GENCOST01-BP01</a></td><td>推論コストを最適化するようにモデルを適正なサイズで選ぶ</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost02-bp01.html" target="_blank" rel="noopener">GENCOST02-BP01</a></td><td>推論方式を選ぶときにコストと性能のバランスを取る</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost02-bp02.html" target="_blank" rel="noopener">GENCOST02-BP02</a></td><td>リソースの消費を最適化してホスティングのコストを最小にする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost03-bp01.html" target="_blank" rel="noopener">GENCOST03-BP01</a></td><td>プロンプトのトークン数を最適化する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost03-bp02.html" target="_blank" rel="noopener">GENCOST03-BP02</a></td><td>モデルの応答の長さを制御する</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost03-bp03.html" target="_blank" rel="noopener">GENCOST03-BP03</a></td><td>プロンプトキャッシュでトークンのコストを下げる</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost03-bp04.html" target="_blank" rel="noopener">GENCOST03-BP04</a></td><td>利用者の入力に注釈を付けてコストを考慮したコンテンツフィルタリングにする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost04-bp01.html" target="_blank" rel="noopener">GENCOST04-BP01</a></td><td>埋め込みのベクトル長を短くする</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gencost05-bp01.html" target="_blank" rel="noopener">GENCOST05-BP01</a></td><td>長時間実行されるワークフローに停止条件を設ける</td></tr>
+        </tbody>
+      </table></div>
+      <h3>持続可能性</h3>
+      <div class="table-scroll"><table>
+        <tbody>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensus01-bp01.html" target="_blank" rel="noopener">GENSUS01-BP01</a></td><td>オートスケーリングとサーバーレスでリソースの利用効率を高める</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensus01-bp02.html" target="_blank" rel="noopener">GENSUS01-BP02</a></td><td>効率的なモデルカスタマイズのサービスを使う</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensus02-bp01.html" target="_blank" rel="noopener">GENSUS02-BP01</a></td><td>データの処理と保存を最適化してエネルギー消費を抑える</td></tr>
+          <tr><td><a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/gensus03-bp01.html" target="_blank" rel="noopener">GENSUS03-BP01</a></td><td>小さなモデルと最適化された推論手法で環境負荷を下げる</td></tr>
+        </tbody>
+      </table></div>
+      <p class="small muted">出典：<a href="https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html" target="_blank" rel="noopener">Well-Architected Generative AI Lens</a>。ベストプラクティスの名前は要旨の日本語訳です。</p>
+    </section>
+
     <section id="refs">
-      <h2>10. 参考資料</h2>
+      <h2>11. 参考資料</h2>
       <ul>
         <li><a href="https://docs.aws.amazon.com/ja_jp/aws-certification/latest/ai-professional-01/ai-professional-01.html" target="_blank" rel="noopener">AIP-C01 試験ガイド</a>（各分野のタスクとスキル）</li>
         <li><a href="https://docs.aws.amazon.com/ja_jp/aws-certification/latest/ai-professional-01/aip-01-in-scope-services.html" target="_blank" rel="noopener">In-Scope AWS Services</a> / <a href="https://docs.aws.amazon.com/ja_jp/aws-certification/latest/ai-professional-01/aip-01-out-of-scope-services.html" target="_blank" rel="noopener">Out-of-Scope AWS Services</a></li>

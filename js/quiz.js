@@ -40,6 +40,21 @@
   function sameSet(a, b) { return a.length === b.length && a.slice().sort().join() === b.slice().sort().join(); }
 
   // ---- ホーム ----
+  // 分野の選択肢には、選んでいる回の問題数を表示する（選択の状態は保つ）
+  function renderDomainFilter() {
+    var setEl = document.querySelector("input[name=set]:checked");
+    var set = setEl ? Number(setEl.value) : 1;
+    var prev = {};
+    Array.prototype.forEach.call(document.querySelectorAll("input[name=dom]"), function (e) { prev[e.value] = e.checked; });
+    var html = "";
+    Object.keys(window.DOMAINS).forEach(function (d) {
+      var n = window.QUESTIONS.filter(function (q) { return q.set === set && String(q.domain) === d; }).length;
+      var on = prev[d] === undefined ? true : prev[d];
+      html += '<label><input type="checkbox" name="dom" value="' + d + '"' + (on ? " checked" : "") + "> " + domainLabel(d) + "（" + n + "問）</label>";
+    });
+    $("domainFilter").innerHTML = html;
+  }
+
   function renderHome() {
     var h = loadHistory();
     var sets = "";
@@ -49,13 +64,10 @@
         "> 第" + n + "回（" + (cnt ? cnt + "問" : "準備中") + "）</label>";
     }
     $("setFilter").innerHTML = sets;
-    var box = $("domainFilter");
-    var html = "";
-    Object.keys(window.DOMAINS).forEach(function (d) {
-      var n = window.QUESTIONS.filter(function (q) { return String(q.domain) === d; }).length;
-      html += '<label><input type="checkbox" name="dom" value="' + d + '" checked> ' + domainLabel(d) + "（" + n + "問）</label>";
+    renderDomainFilter();
+    Array.prototype.forEach.call(document.querySelectorAll("input[name=set]"), function (r) {
+      r.addEventListener("change", renderDomainFilter);
     });
-    box.innerHTML = html;
     $("total").textContent = window.QUESTIONS.length;
 
     var rows = "";
