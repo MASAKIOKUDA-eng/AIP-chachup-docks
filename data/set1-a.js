@@ -1,4 +1,4 @@
-// AIP-C01 サンプル問題（シナリオ形式・複数サービスの組み合わせ）
+// 第1回 問題 1〜10（最初に作成したサンプル問題）
 // 各問題の evidence は、解答の根拠となる AWS 公式ドキュメントとその記載の要旨です。
 //
 // フィールド:
@@ -8,9 +8,9 @@
 
 var D = "https://docs.aws.amazon.com/ja_jp/";
 
-window.QUESTIONS = [
+addQuestions(1, [
   {
-    id: "Q01",
+    wa: "GENSEC01-BP03",
     domain: 1,
     task: "1.5 検索（リトリーバル）メカニズムの設計",
     topic: "RAG の検索とアクセス制御",
@@ -46,7 +46,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q02",
+    wa: "GENSEC02-BP01",
     domain: 3,
     task: "3.1 入出力の安全対策の実装",
     topic: "入出力の安全対策（Guardrails）",
@@ -83,7 +83,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q03",
+    wa: "GENPERF03-BP01",
     domain: 2,
     task: "2.1 エージェント型 AI とツール連携の実装",
     topic: "エージェントの本番運用（AgentCore）",
@@ -121,7 +121,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q04",
+    wa: "GENSEC05-BP01",
     domain: 2,
     task: "2.1 エージェント型 AI とツール連携の実装",
     topic: "エージェントのアクション制御",
@@ -157,7 +157,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q05",
+    wa: "GENCOST02-BP01",
     domain: 4,
     task: "4.1 コスト最適化",
     topic: "推論コストの最適化",
@@ -196,7 +196,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q06",
+    wa: "GENPERF04-BP01",
     domain: 1,
     task: "1.3 データの検証と処理パイプライン / 1.4 ベクトルストア",
     topic: "RAG のデータ取り込み（解析・チャンキング）",
@@ -232,7 +232,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q07",
+    wa: "GENSEC01-BP02",
     domain: 3,
     task: "3.2 データセキュリティとプライバシー / 3.3 ガバナンスとコンプライアンス",
     topic: "閉域接続と監査ログ",
@@ -268,7 +268,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q08",
+    wa: "GENOPS01-BP01",
     domain: 5,
     task: "5.1 生成 AI の評価の仕組みの実装",
     topic: "RAG の評価と品質ゲート",
@@ -304,7 +304,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q09",
+    wa: "GENOPS02-BP03",
     domain: 5,
     task: "5.2 生成 AI アプリケーションのトラブルシューティング / 4.2 パフォーマンス",
     topic: "スロットリング対策",
@@ -344,7 +344,7 @@ window.QUESTIONS = [
     ]
   },
   {
-    id: "Q10",
+    wa: "GENSUS01-BP01",
     domain: 2,
     task: "2.4 基盤モデル API の統合 / 2.5 アプリケーション統合パターン",
     topic: "ストリーミング応答と会話履歴",
@@ -380,12 +380,4 @@ window.QUESTIONS = [
       { title: "DynamoDB の Time to Live（TTL）", url: D + "amazondynamodb/latest/developerguide/TTL.html", point: "項目ごとに有効期限のタイムスタンプを設定すると、期限切れの項目が書き込みスループットを消費せずに自動で削除される。" }
     ]
   }
-];
-
-window.DOMAINS = {
-  1: { name: "基盤モデルの統合、データ管理、コンプライアンス", weight: 31 },
-  2: { name: "実装と統合", weight: 26 },
-  3: { name: "AI の安全性、セキュリティ、ガバナンス", weight: 20 },
-  4: { name: "生成 AI アプリケーションの運用効率と最適化", weight: 12 },
-  5: { name: "テスト、検証、トラブルシューティング", weight: 11 }
-};
+]);
