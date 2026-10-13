@@ -129,3 +129,7 @@ th { border-bottom: 1px solid var(--rule-strong); font-weight: 700; white-space:
 .arch .arrow { margin: 0 .5em; color: var(--muted); }
 .arch .node.side { display: block; color: var(--muted); font-size: .85rem; margin-top: 4px; }
 .arch .node.side::before { content: "補助："; }
+
+/* 10 問ずつの演習の範囲の選択 */
+select { font: inherit; font-size: .93rem; color: var(--text); background: var(--bg); border: 1px solid var(--rule-strong); border-radius: 2px; padding: 4px 6px; max-width: 100%; }
+#tenOpts label { display: block; margin-bottom: 4px; }
