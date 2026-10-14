@@ -3,6 +3,8 @@
   var $ = function (id) { return document.getElementById(id); };
   var LETTERS = "ABCDEFGH";
   var STORE = "aip-quiz-history";
+  var PREFS = "aip-quiz-prefs";
+  var TEN = 10;
 
   var state = { list: [], idx: 0, answers: {}, checked: {}, order: {} };
 
@@ -18,6 +20,9 @@
   }
   function loadHistory() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } }
   function saveHistory(h) { try { localStorage.setItem(STORE, JSON.stringify(h)); } catch (e) {} }
+  // 出題方式と 10 問の選び方は、次に開いたときも同じにする
+  function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREFS)) || {}; } catch (e) { return {}; } }
+  function savePrefs(p) { try { localStorage.setItem(PREFS, JSON.stringify(p)); } catch (e) {} }
   function domainLabel(d) { return "第" + d + "分野　" + esc(window.DOMAINS[d].name); }
   function guideLink(q) {
     return q.guide ? '<a href="guide.html#' + encodeURIComponent(q.guide) + '">' + esc(q.topic) + " の解説（アーキテクチャガイド）</a>" : esc(q.topic);
@@ -53,14 +58,59 @@
       html += '<label><input type="checkbox" name="dom" value="' + d + '"' + (on ? " checked" : "") + "> " + domainLabel(d) + "（" + n + "問）</label>";
     });
     $("domainFilter").innerHTML = html;
+    renderBlocks();
+  }
+
+  function selectedSet() {
+    var setEl = document.querySelector("input[name=set]:checked");
+    return setEl ? Number(setEl.value) : 1;
+  }
+  function selectedDomains() {
+    return Array.prototype.map.call(document.querySelectorAll("input[name=dom]:checked"), function (e) { return Number(e.value); });
+  }
+  function selectedMode() {
+    var m = document.querySelector("input[name=mode]:checked");
+    return m ? m.value : "all";
+  }
+  // 選んだ回と分野の問題（問題番号の順）
+  function pool(set, doms) {
+    return window.QUESTIONS.filter(function (q) { return q.set === set && doms.indexOf(q.domain) >= 0; });
+  }
+
+  // 10 問の選び方：おまかせ、または問題番号の順に 10 問ずつ区切った範囲
+  function renderBlocks() {
+    var list = pool(selectedSet(), selectedDomains());
+    var h = loadHistory();
+    var prev = $("block").value || loadPrefs().block || "auto";
+    var html = '<option value="auto">おまかせ（未解答・前回不正解を優先）</option>';
+    for (var b = 0; b * TEN < list.length; b++) {
+      var part = list.slice(b * TEN, b * TEN + TEN);
+      var done = part.filter(function (q) { return h[q.id]; });
+      var ok = done.filter(function (q) { return h[q.id].last; }).length;
+      html += '<option value="' + b + '">' + (b * TEN + 1) + "〜" + (b * TEN + part.length) + " 問目" +
+        (done.length ? "（解答済み " + done.length + "・正解 " + ok + "）" : "") + "</option>";
+    }
+    $("block").innerHTML = html;
+    $("block").value = prev;
+    if ($("block").value !== prev) $("block").value = "auto";
+    $("tenOpts").hidden = selectedMode() !== "ten";
+  }
+
+  // おまかせの 10 問：まだ解いていない問題 → 前回間違えた問題 → 前回正解した問題 の順に選び、問題番号の順に並べる
+  function pickAuto(list) {
+    var h = loadHistory();
+    var rank = function (q) { return !h[q.id] ? 0 : !h[q.id].last ? 1 : 2; };
+    var picked = shuffle(list).sort(function (a, b) { return rank(a) - rank(b); }).slice(0, TEN);
+    return list.filter(function (q) { return picked.indexOf(q) >= 0; });
   }
 
   function renderHome() {
     var h = loadHistory();
+    var cur = document.querySelector("input[name=set]:checked") ? selectedSet() : 1; // 設定に戻ったときも選んでいた回を保つ
     var sets = "";
     for (var n = 1; n <= window.SET_COUNT; n++) {
       var cnt = window.QUESTIONS.filter(function (q) { return q.set === n; }).length;
-      sets += '<label><input type="radio" name="set" value="' + n + '"' + (n === 1 ? " checked" : "") + (cnt ? "" : " disabled") +
+      sets += '<label><input type="radio" name="set" value="' + n + '"' + (n === cur ? " checked" : "") + (cnt ? "" : " disabled") +
         "> 第" + n + "回（" + (cnt ? cnt + "問" : "準備中") + "）</label>";
     }
     $("setFilter").innerHTML = sets;
@@ -83,16 +133,30 @@
   }
 
   function start(onlyWrong) {
-    var doms = Array.prototype.map.call(document.querySelectorAll("input[name=dom]:checked"), function (e) { return Number(e.value); });
     var h = loadHistory();
-    var setEl = document.querySelector("input[name=set]:checked");
-    var set = setEl ? Number(setEl.value) : 1;
-    var list = window.QUESTIONS.filter(function (q) {
-      return q.set === set && doms.indexOf(q.domain) >= 0 && (!onlyWrong || (h[q.id] && !h[q.id].last));
-    });
+    var set = selectedSet();
+    var list = pool(set, selectedDomains()).filter(function (q) { return !onlyWrong || (h[q.id] && !h[q.id].last); });
     if (!list.length) { alert(onlyWrong ? "間違えた問題はありません。" : "出題範囲を1つ以上選んでください。"); return; }
+    var mode = selectedMode();
+    var block = $("block").value;
+    var label = "";
+    savePrefs({ mode: mode, block: block });
+    if (mode === "ten") {
+      if (onlyWrong) { list = list.slice(0, TEN); label = "前回間違えた問題"; }
+      else if (block === "auto") { list = pickAuto(list); label = "おまかせ"; }
+      else {
+        var b = Number(block);
+        list = list.slice(b * TEN, b * TEN + TEN);
+        label = (b * TEN + 1) + "〜" + (b * TEN + list.length) + " 問目";
+      }
+    }
+    begin(list, { mode: mode, block: onlyWrong ? "wrong" : block, label: label });
+  }
+
+  // 問題の一覧を受け取って出題を始める（「同じ問題をもう一度」でも使う）
+  function begin(list, info) {
     if ($("shuffleQ").checked) list = shuffle(list);
-    state = { list: list, idx: 0, answers: {}, checked: {}, order: {} };
+    state = { list: list, idx: 0, answers: {}, checked: {}, order: {}, info: info };
     var shuffleC = $("shuffleC").checked;
     list.forEach(function (q) {
       var idxs = q.choices.map(function (_, i) { return i; });
@@ -115,7 +179,7 @@
     var checked = !!state.checked[q.id];
     var multi = isMulti(q);
 
-    $("qProgress").textContent = "第" + q.set + "回　" + (state.idx + 1) + " / " + state.list.length + "（問題 " + q.id + "）";
+    $("qProgress").textContent = "第" + q.set + "回　" + (state.info.mode === "ten" ? "10 問演習（" + state.info.label + "）　" : "") + (state.idx + 1) + " / " + state.list.length + "（問題 " + q.id + "）";
     $("bar").style.width = ((state.idx + 1) / state.list.length * 100) + "%";
     // 解答前から、どの分野・知識を問う問題かを示す
     $("qMeta").innerHTML =
@@ -234,10 +298,28 @@
         e.preventDefault(); state.idx = Number(a.getAttribute("data-i")); show("quiz"); renderQuestion();
       });
     });
+    $("nextTenBtn").hidden = !hasNextTen();
     show("result");
   }
 
+  // 10 問演習の続き：範囲を選んでいたときは次の範囲、おまかせのときは新しい 10 問
+  function hasNextTen() {
+    var info = state.info;
+    if (info.mode !== "ten" || info.block === "wrong") return false;
+    if (info.block === "auto") return true;
+    return (Number(info.block) + 1) * TEN < pool(selectedSet(), selectedDomains()).length;
+  }
+  function nextTen() {
+    if (state.info.block !== "auto") {
+      renderBlocks();
+      $("block").value = String(Number(state.info.block) + 1);
+    }
+    start(false);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    var prefs = loadPrefs();
+    if (prefs.mode === "ten") document.querySelector("input[name=mode][value=ten]").checked = true;
     renderHome();
     $("startBtn").addEventListener("click", function () { start(false); });
     $("wrongBtn").addEventListener("click", function () { start(true); });
@@ -246,7 +328,16 @@
     $("prevBtn").addEventListener("click", function () { if (state.idx > 0) { state.idx -= 1; renderQuestion(); } });
     $("quitBtn").addEventListener("click", function () { renderHome(); show("home"); });
     $("homeBtn").addEventListener("click", function () { renderHome(); show("home"); });
-    $("againBtn").addEventListener("click", function () { start(false); });
+    $("againBtn").addEventListener("click", function () {
+      var list = state.list.slice().sort(function (a, b) { return window.QUESTIONS.indexOf(a) - window.QUESTIONS.indexOf(b); });
+      begin(list, state.info);
+    });
+    $("nextTenBtn").addEventListener("click", nextTen);
+    $("domainFilter").addEventListener("change", renderBlocks);
+    $("block").addEventListener("change", function () { savePrefs({ mode: selectedMode(), block: $("block").value }); });
+    Array.prototype.forEach.call(document.querySelectorAll("input[name=mode]"), function (r) {
+      r.addEventListener("change", function () { renderBlocks(); savePrefs({ mode: selectedMode(), block: $("block").value }); });
+    });
     $("resetBtn").addEventListener("click", function () {
       if (confirm("学習の記録を消去しますか？")) { try { localStorage.removeItem(STORE); } catch (e) {} renderHome(); }
     });

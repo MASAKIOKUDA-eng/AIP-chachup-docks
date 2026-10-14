@@ -34,6 +34,15 @@
         <div id="setFilter" class="filters"></div>
         <p class="small muted">出題する分野</p>
         <div id="domainFilter" class="filters"></div>
+        <p class="small muted">出題方式</p>
+        <div class="filters">
+          <label><input type="radio" name="mode" value="all" checked> 選んだ範囲をすべて解く</label>
+          <label><input type="radio" name="mode" value="ten"> 10 問ずつ演習する</label>
+        </div>
+        <p id="tenOpts" class="small" hidden>
+          <label for="block">10 問の選び方</label>
+          <select id="block"></select>
+        </p>
         <p class="small">
           <label><input type="checkbox" id="shuffleQ"> 問題の順番をシャッフル</label>
           <label><input type="checkbox" id="shuffleC" checked> 選択肢をシャッフル</label>
@@ -77,7 +86,8 @@
       <div class="card"><h2>Well-Architected の柱別</h2><div id="pillarScore" class="table-scroll"></div></div>
       <div class="card"><h2>振り返り</h2><p class="small muted">問題番号を押すと、解説を見直せます。</p><div id="review"></div></div>
       <div class="actions">
-        <button id="againBtn" class="btn primary" type="button">もう一度</button>
+        <button id="nextTenBtn" class="btn primary" type="button" hidden>次の 10 問へ</button>
+        <button id="againBtn" class="btn" type="button">同じ問題をもう一度</button>
         <button id="homeBtn" class="btn" type="button">設定に戻る</button>
       </div>
     </section>
