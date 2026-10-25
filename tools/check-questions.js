@@ -3,6 +3,7 @@
 // ・各回で Well-Architected Generative AI Lens のベストプラクティスをすべて扱っているか（--partial のときは省略）
 // ・選択肢と理由の数、正解の番号、ベストプラクティス ID、参照ドキュメントのキーが正しいか
 // ・正解の選択肢が「一番長い」ことで見抜けてしまわないか
+// ・不正解の選択肢の理由が短すぎないか
 // ・問題文の重複や、ほぼ同じ内容の問題がないか
 var fs = require("fs");
 var path = require("path");
@@ -36,6 +37,10 @@ window.QUESTIONS.forEach(function (q) {
   if (!q.evidence.length && !q.ref.length) err(q.id, "根拠のドキュメント（ref / evidence）がありません");
   q.ref.forEach(function (k) { if (!window.DOCS[k]) err(q.id, "ref のキーが DOCS にありません: " + k); });
   if (new Set(q.choices).size !== q.choices.length) err(q.id, "同じ選択肢があります");
+  // 不正解の選択肢は、なぜ誤りかが分かるように理由を書く（短い一言で済ませない）
+  (q.why || []).forEach(function (w, i) {
+    if (q.answer.indexOf(i) < 0 && w.length < 30) err(q.id, "不正解の選択肢 " + (i + 1) + " の理由が短すぎます（" + w.length + " 文字。30 文字以上にします）");
+  });
 });
 
 // 重複・類似の検出（問題文の文字 3-gram の Jaccard 係数）
