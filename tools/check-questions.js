@@ -1,4 +1,4 @@
-// 問題データの検査: node tools/check-questions.js [--partial]
+// 問題データの検査: node tools/check-questions.js [--partial] [--set <回>]
 // ・各回が 75 問で、試験分野の配分が配点どおりか（--partial のときは作成途中として省略）
 // ・各回で Well-Architected Generative AI Lens のベストプラクティスをすべて扱っているか（--partial のときは省略）
 // ・選択肢と理由の数、正解の番号、ベストプラクティス ID、参照ドキュメントのキーが正しいか
@@ -9,11 +9,15 @@ var fs = require("fs");
 var path = require("path");
 var root = path.join(__dirname, "..");
 var partial = process.argv.indexOf("--partial") >= 0;
+// --set <回> を付けると、その回のデータだけを読み込んで検査する（回ごとに作業するとき）
+var onlySet = process.argv.indexOf("--set") >= 0 ? process.argv[process.argv.indexOf("--set") + 1] : null;
 
 global.window = {};
 eval(fs.readFileSync(path.join(root, "data", "meta.js"), "utf8"));
 global.addQuestions = window.addQuestions;
-fs.readdirSync(path.join(root, "data")).filter(function (f) { return /^set\d+-[a-z]\.js$/.test(f); }).sort().forEach(function (f) {
+fs.readdirSync(path.join(root, "data")).filter(function (f) {
+  return /^set\d+-[a-z]\.js$/.test(f) && (!onlySet || f.indexOf("set" + onlySet + "-") === 0);
+}).sort().forEach(function (f) {
   eval(fs.readFileSync(path.join(root, "data", f), "utf8"));
 });
 
