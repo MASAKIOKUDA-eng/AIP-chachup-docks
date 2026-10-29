@@ -41,6 +41,14 @@
     q.ref.forEach(function (k) { var d = window.DOCS[k]; if (d) list.push({ title: d[0], url: d[1] }); });
     return list;
   }
+  // 選択肢ごとに、正解の理由と、不正解の選択肢がなぜ誤りかを示す（表示の順番で）
+  function whyList(q, order) {
+    return '<h3>選択肢ごとの解説</h3><dl class="whylist">' + order.map(function (orig, pos) {
+      var right = q.answer.indexOf(orig) >= 0;
+      var text = String(q.why[orig] || "").replace(/^(正解|誤り|不正解)。/, "");
+      return '<dt class="' + (right ? "ok" : "ng") + '">' + LETTERS[pos] + "　" + (right ? "正解" : "不正解") + "</dt><dd>" + esc(text) + "</dd>";
+    }).join("") + "</dl>";
+  }
   function isMulti(q) { return q.answer.length > 1; }
   function sameSet(a, b) { return a.length === b.length && a.slice().sort().join() === b.slice().sort().join(); }
 
@@ -200,8 +208,7 @@
         else if (on) cls += " wrong";
       }
       html += '<label class="' + cls + '"><input type="' + (multi ? "checkbox" : "radio") + '" name="c" value="' + orig + '"' +
-        (on ? " checked" : "") + (checked ? " disabled" : "") + '><span class="label">' + LETTERS[pos] + "</span><span>" + esc(q.choices[orig]) +
-        (checked ? '<span class="why">' + esc(q.why[orig]) + "</span>" : "") + "</span></label>";
+        (on ? " checked" : "") + (checked ? " disabled" : "") + '><span class="label">' + LETTERS[pos] + "</span><span>" + esc(q.choices[orig]) + "</span></label>";
     });
     $("choices").innerHTML = html;
     Array.prototype.forEach.call(document.querySelectorAll("#choices input"), function (inp) {
@@ -223,6 +230,7 @@
       fb.innerHTML =
         '<p class="result-line ' + (ok ? "ok" : "ng") + '">' + (ok ? "正解" : "不正解（正解は " + correctLetters + "）") + "</p>" +
         "<h3>解説</h3><p>" + esc(q.explanation) + "</p>" +
+        whyList(q, order) +
         (q.flow.length ? "<h3>正解のアーキテクチャ（処理の流れ）</h3><ol class=\"flow\">" + q.flow.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ol>" : "") +
         waBlock(q) +
         "<h3>根拠となる AWS ドキュメント</h3>" + evidenceList(q).map(function (e) {

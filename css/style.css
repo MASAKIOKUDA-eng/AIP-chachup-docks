@@ -94,10 +94,12 @@ th { border-bottom: 1px solid var(--rule-strong); font-weight: 700; white-space:
 .choice.sel { background: var(--mark); }
 .choice.correct { box-shadow: inset 3px 0 0 var(--ok); }
 .choice.wrong { box-shadow: inset 3px 0 0 var(--ng); }
-.choice .why { display: block; margin-top: 4px; font-size: .88rem; color: var(--muted); }
-.choice .why b { font-weight: 700; }
-.choice.correct .why b { color: var(--ok); }
-.choice.wrong .why b, .choice .why b.ng { color: var(--ng); }
+/* 選択肢ごとの解説 */
+.whylist { margin: 0; }
+.whylist dt { font-weight: 700; margin-top: 10px; }
+.whylist dt.ok { color: var(--ok); }
+.whylist dt.ng { color: var(--ng); }
+.whylist dd { margin: 2px 0 0; padding-left: 12px; border-left: 2px solid var(--rule); }
 
 .result-line { font-weight: 700; margin: 20px 0 4px; }
 .result-line.ok { color: var(--ok); }

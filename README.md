@@ -8,16 +8,17 @@ AWS Certified Generative AI Developer – Professional（**AIP-C01**）の出題
 | ページ | 内容 |
 | --- | --- |
 | `index.html` | ホーム。試験ガイドの分野・配点・タスク |
-| `quiz.html` | 問題集（75 問 × 6 回 = 450 問）。実際のユースケースを想定し、複数のサービスを組み合わせて設計するシナリオ問題。解答後に、選択肢ごとの正誤理由、判断基準とした Well-Architected のベストプラクティス、根拠となる AWS 公式ドキュメントへのリンクを表示 |
+| `quiz.html` | 問題集（75 問 × 6 回 = 450 問）。実際のユースケースを想定し、複数のサービスを組み合わせて設計するシナリオ問題。解答後に、解説（正解の理由と、不正解の選択肢がなぜ誤りか）、判断基準とした Well-Architected のベストプラクティス、根拠となる AWS 公式ドキュメントへのリンクを表示 |
 | `guide.html` | アーキテクチャ説明ガイド。出題範囲のサービスを生成 AI アプリの 7 つの層で整理し、頻出パターン、判断表、サービスごとの役割・使いどころ・試験の着眼点、Well-Architected Generative AI Lens のベストプラクティスの一覧を掲載 |
 
 ### 問題集の作り方の方針
 
 - **1 回 75 問 × 6 回。** 各回の分野の配分は試験の配点どおり（第1分野 23 問、第2分野 20 問、第3分野 15 問、第4分野 9 問、第5分野 8 問）。
 - **正解の基準は Well-Architected。** すべての問題で、正解は [Well-Architected Generative AI Lens](https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html) のベストプラクティスに沿っているかどうかで決めています。各回で 6 つの柱の 50 のベストプラクティスをすべて扱います。
-- **実際のユースケースが前提。** 業界や業務の状況と制約を示し、その中で最も適切な設計や対応を選ぶ問題です。
+- **実際のユースケースが前提で、問うのはアーキテクチャの構成。** 業界や業務の状況と、技術的な要件・制約（件数、レイテンシ、復旧の目標、閉域網、運用の体制など）を示し、最も適切な AWS の構成を選ぶ問題です。選択肢はすべて具体的な構成案で、「手作業で対応する」「機能をやめる」のようなビジネスの判断は選択肢にしていません。
 - **重複は不可。** 問われるサービスの重複は許容しますが、同じ内容の問題は入れていません（検査スクリプトで問題文の類似度も確かめています）。
 - **選択肢の長さで正解が分からないように**しています。正解が一番長い選択肢になる問題はなく、一番短い問題が多くなりすぎないようにもしています。
+- **不正解の選択肢も解説する。** 解答後の解説には、正解の理由だけでなく、不正解の選択肢がそれぞれなぜ誤りか（問題文のどの要件や制約に合わないか、何をすべきだったか）を載せています。
 - 問題はすべて公開情報をもとにしたオリジナル問題で、実際の試験問題ではありません。
 
 ## 使い方
@@ -49,7 +50,7 @@ AWS Certified Generative AI Developer – Professional（**AIP-C01**）の出題
 | `q` | 問題文 |
 | `c` | 選択肢（4 つ。複数選択の問題は 5 つ） |
 | `a` | 正解の選択肢の番号（0 始まり）。複数選択の問題は配列 |
-| `why` | 選択肢ごとの正誤の理由（`c` と同じ順番） |
+| `why` | 選択肢ごとの正誤の理由（`c` と同じ順番）。不正解の選択肢は、問題文の要件や制約に照らして何が問題か、代わりに何をすべきかを 30〜120 文字で書く |
 | `exp` | 解説。Well-Architected のベストプラクティスに沿う理由を含める |
 | `ref` | 根拠のドキュメントのキーの配列。一覧は `data/meta.js` の `DOCS` |
 
@@ -66,14 +67,17 @@ node tools/check-questions.js
 - 各回が 75 問で、分野の配分が配点どおりか
 - 各回で 50 のベストプラクティスをすべて扱っているか
 - 選択肢と理由の数、正解の番号、ベストプラクティスの ID、ドキュメントのキーが正しいか
+- 不正解の選択肢の理由が短すぎないか（30 文字以上）
 - 正解が一番長い選択肢になっていないか、一番短い問題が多すぎないか
 - 問題文が重複・類似していないか
 
-作成の途中で分野の配分などの検査を省くときは `--partial` を付けます。補助として、`node tools/show-choices.js 1-01 1-02` で選択肢の文字数を確認できます。
+作成の途中で分野の配分などの検査を省くときは `--partial` を、1 回分だけを検査するときは `--set <回>` を付けます。`node tools/lint-architecture.js <回>` で、業務の判断のように見える選択肢（手作業、周知など）を一覧にできます（目安）。補助として、`node tools/show-choices.js 1-01 1-02` で選択肢の文字数を確認できます。
 
 ## ファイル構成
 
 ```
+LICENSE                   Apache License 2.0
+NOTICE                    著作権表示
 index.html                ホーム
 quiz.html                 問題集
 guide.html                アーキテクチャ説明ガイド
@@ -84,6 +88,7 @@ data/meta.js              分野、Well-Architected のベストプラクティ�
 data/set1-a.js 〜 set6-d.js  問題データ（各回 4 ファイル）
 tools/check-questions.js  問題データの検査
 tools/show-choices.js     選択肢と文字数の表示
+tools/lint-architecture.js  構成を問う問題になっているかの目安
 tools/near-shortest.js    正解が一番短い問題の一覧
 tools/replace.py          文字列の一括置換
 ```
@@ -97,3 +102,17 @@ Settings → Pages で Branch を `main`、フォルダを `/ (root)` にして�
 - [AIP-C01 試験ガイド](https://docs.aws.amazon.com/ja_jp/aws-certification/latest/ai-professional-01/ai-professional-01.html)
 - [In-Scope AWS Services](https://docs.aws.amazon.com/ja_jp/aws-certification/latest/ai-professional-01/aip-01-in-scope-services.html)
 - [Well-Architected Generative AI Lens](https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html)
+
+## ライセンス
+
+[Apache License 2.0](LICENSE) で公開しています。コード、問題、解説、ガイドの文章のすべてが対象です。著作権表示は [NOTICE](NOTICE) にあります。
+
+```
+Copyright 2026 Masaki Okuda
+```
+
+## 免責事項
+
+- このサイトは個人が作成した学習用の教材です。Amazon Web Services（AWS）の公式の教材ではなく、AWS が承認・提供しているものでもありません。
+- 「AWS」「Amazon Bedrock」などのサービス名は、Amazon.com, Inc. またはその関連会社の商標です。
+- 問題と解説は正確さに努めていますが、誤りを含む可能性があります。最新の仕様は AWS の公式ドキュメントで確認してください。
