@@ -2,7 +2,7 @@
 // ・各回が 75 問で、試験分野の配分が配点どおりか（--partial のときは作成途中として省略）
 // ・各回で Well-Architected Generative AI Lens のベストプラクティスをすべて扱っているか（--partial のときは省略）
 // ・選択肢と理由の数、正解の番号、ベストプラクティス ID、参照ドキュメントのキーが正しいか
-// ・正解の選択肢が「一番長い」ことで見抜けてしまわないか
+// ・正解の選択肢が「一番長い」「2 番目に長い」など、長さの順位で見抜けてしまわないか
 // ・不正解の選択肢の理由が短すぎないか
 // ・問題文の重複や、ほぼ同じ内容の問題がないか
 var fs = require("fs");
@@ -80,9 +80,21 @@ for (var s = 1; s <= window.SET_COUNT; s++) {
     var minOther = Math.min.apply(null, len.filter(function (_, i) { return q.answer.indexOf(i) < 0; }));
     return q.answer.every(function (i) { return len[i] < minOther; });
   }).length;
+  // 「2 番目に長いものを選ぶ」のような選び方で当たらないように、単一選択の問題で正解の長さの順位が偏っていないか
+  // （順位 = 正解より長い選択肢の数。0 は一番長いか同じ長さ）
+  var singles = list.filter(function (q) { return q.answer.length === 1; });
+  var ranks = [0, 0, 0, 0];
+  singles.forEach(function (q) {
+    var len = q.choices.map(function (c) { return c.length; });
+    var a = len[q.answer[0]];
+    ranks[Math.min(3, len.filter(function (x) { return x > a; }).length)]++;
+  });
+  if (singles.length >= 20) ranks.forEach(function (n, r) {
+    if (n / singles.length > 0.4) err("第" + s + "回", "正解が " + (r + 1) + " 番目に長い選択肢の問題が " + n + " / " + singles.length + " 問あり、偏っています（40% 以下にします）");
+  });
   if (list.length >= 20 && shortest / list.length > 0.35) err("第" + s + "回", "正解が一番短い選択肢になっている問題が " + shortest + " 問あり、多すぎます");
   summary.push("第" + s + "回: " + list.length + " 問 / 分野 " + [1, 2, 3, 4, 5].map(function (d) { return byDom[d] || 0; }).join("-") +
-    " / 複数選択 " + multi + " / 正解が最短 " + shortest + " / 未使用のベストプラクティス " + missing.length);
+    " / 複数選択 " + multi + " / 正解が最短 " + shortest + " / 正解の長さの順位 " + ranks.join("-") + " / 未使用のベストプラクティス " + missing.length);
   if (!partial) {
     if (list.length !== window.SET_SIZE) err("第" + s + "回", "問題数が " + list.length + " です（" + window.SET_SIZE + " 問にします）");
     Object.keys(window.DOMAINS).forEach(function (d) {
